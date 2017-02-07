@@ -2,7 +2,6 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
 import ClusteredReadModelFactory from "../scripts/ClusteredReadModelFactory";
-import MockReadModelFactory from "./fixtures/MockReadModelFactory";
 import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
 import MockProjectionSorter from "./fixtures/MockProjectionSorter";
 import MockCluster from "./fixtures/MockCluster";
@@ -15,7 +14,6 @@ import MockRequest from "./fixtures/MockRequest";
 
 describe("Given a ClusteredReadModelFactory", () => {
 
-    let readModelFactory: TypeMoq.IMock<IReadModelFactory>;
     let subject: IReadModelFactory;
     let cluster: TypeMoq.IMock<ICluster>;
     let sorter: TypeMoq.IMock<IProjectionSorter>;
@@ -25,25 +23,34 @@ describe("Given a ClusteredReadModelFactory", () => {
         cluster = TypeMoq.Mock.ofType(MockCluster);
         sorter = TypeMoq.Mock.ofType(MockProjectionSorter);
         registry = TypeMoq.Mock.ofType(MockProjectionRegistry);
-        readModelFactory = TypeMoq.Mock.ofType(MockReadModelFactory);
-        subject = new ClusteredReadModelFactory(readModelFactory.object, registry.object, cluster.object, sorter.object);
         registry.setup(r => r.getEntry("Projection")).returns(() => {
             return {area: null, data: new RegistryEntry(new DynamicNameProjection("Projection").define(), null)};
         });
         sorter.setup(sorter => sorter.dependents(TypeMoq.It.isValue(new DynamicNameProjection("Projection").define()))).returns(() => ["Proj2", "Proj3"]);
+        subject = new ClusteredReadModelFactory(registry.object, cluster.object, sorter.object);
     });
 
     context("when a new readmodel is published", () => {
-        it("should broadcast it to the dependent nodes", () => {
-            subject.publish({
+        let readModel: Event;
+        beforeEach(() => {
+            cluster.setup(c => c.requests()).returns(() => Observable.empty<RequestData>());
+            readModel = {
                 type: "Projection",
                 payload: {
                     "id": 20
                 },
                 splitKey: null,
                 timestamp: null
-            });
+            };
+            subject.publish(readModel);
+        });
+
+        it("should broadcast it to the dependent nodes", () => {
             cluster.verify(c => c.handleOrProxyToAll(TypeMoq.It.isValue(["Proj2", "Proj3"]), TypeMoq.It.isAny()), TypeMoq.Times.once());
+        });
+
+        it("should cache it", () => {
+            expect(subject.asList()).to.eql([readModel]);
         });
     });
 
@@ -64,17 +71,15 @@ describe("Given a ClusteredReadModelFactory", () => {
                     timestamp: null
                 }, "readModel"), new MockResponse()]);
             }));
-            readModelFactory.setup(r => r.from(null)).returns(() => Observable.create<Event>(observer => {
-                observer.onNext({
-                    type: "Projection2",
-                    payload: 50,
-                    splitKey: null,
-                    timestamp: null
-                });
-            }));
         });
         it("should merge the readmodels coming from the other nodes", () => {
             let notifications: Event[] = [];
+            subject.publish({
+                type: "Projection",
+                payload: 50,
+                splitKey: null,
+                timestamp: null
+            });
             subject.from(null).subscribe(readModel => notifications.push(readModel));
             expect(notifications).to.have.length(3);
             expect(notifications[0].payload).to.be(50);
