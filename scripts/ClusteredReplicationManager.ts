@@ -1,8 +1,7 @@
-import {IReplicationManager} from "../bootstrap/ReplicationManager";
 import {inject, optional, injectable} from "inversify";
-import ILogger from "../log/ILogger";
 import {IClusterConfig, EmbeddedClusterConfig} from "./ClusterConfig";
-import * as cluster from "Cluster";
+import * as cluster from "cluster";
+import {ILogger, IReplicationManager} from "prettygoat";
 
 @injectable()
 class ClusteredReplicationManager implements IReplicationManager {

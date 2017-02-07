@@ -1,6 +1,6 @@
 import {Observable} from "rx";
 import {IncomingMessage, ServerResponse} from "http";
-import {RequestData} from "../web/IRequestComponents";
+import {RequestData} from "prettygoat";
 
 interface ICluster {
     startup(): Observable<void>;

@@ -1,8 +1,6 @@
-import RequestAdapter from "../web/RequestAdapter";
 import {inject} from "inversify";
 import ICluster from "../ICluster";
-import {IRouteResolver, IResponse, IRequest, IRequestHandler} from "../web/IRequestComponents";
-import RequestBuilder from "./RequestBuilder";
+import {IRouteResolver, IRequest, IResponse, RequestAdapter} from "prettygoat";
 
 class ClusteredRequestAdapter extends RequestAdapter {
 

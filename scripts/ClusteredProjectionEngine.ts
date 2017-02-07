@@ -1,17 +1,10 @@
-import IProjectionEngine from "../projections/IProjectionEngine";
 import {inject, injectable} from "inversify";
-import {IProjection} from "../projections/IProjection";
-import PushContext from "../push/PushContext";
-import IProjectionRegistry from "../registry/IProjectionRegistry";
-import {ISnapshotRepository} from "../snapshots/ISnapshotRepository";
-import Dictionary from "../util/Dictionary";
-import IProjectionRunner from "../projections/IProjectionRunner";
 import * as _ from "lodash";
-import RegistryEntry from "../registry/RegistryEntry";
-import AreaRegistry from "../registry/AreaRegistry";
-import IProjectionSorter from "../projections/IProjectionSorter";
 import ICluster from "./ICluster";
-import ILogger from "../log/ILogger";
+import {
+    ILogger, ISnapshotRepository, IProjectionSorter, IProjectionEngine, PushContext, IProjection,
+    IProjectionRegistry, Dictionary, RegistryEntry, AreaRegistry, IProjectionRunner
+} from "prettygoat";
 
 @injectable()
 class ClusteredProjectionEngine implements IProjectionEngine {

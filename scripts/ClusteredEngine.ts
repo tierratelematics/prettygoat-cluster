@@ -1,9 +1,6 @@
-import Engine from "../bootstrap/Engine";
 import ClusterModule from "./ClusterModule";
-import IProjectionEngine from "../projections/IProjectionEngine";
 import ICluster from "./ICluster";
-import {IRequestAdapter} from "../web/IRequestComponents";
-import {IReplicationManager} from "../bootstrap/ReplicationManager";
+import {IReplicationManager, IProjectionEngine, IRequestAdapter, Engine} from "prettygoat";
 
 class ClusteredEngine extends Engine {
 

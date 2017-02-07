@@ -1,3 +1,5 @@
+import Channel from "../../scripts/web/ChannelDecorator";
+
 @Channel("test")
 export class ChannelRequestHandler implements IRequestHandler {
 

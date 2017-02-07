@@ -1,26 +1,18 @@
-import IModule from "../bootstrap/IModule";
 import {interfaces} from "inversify";
-import IProjectionRegistry from "../registry/IProjectionRegistry";
-import IServiceLocator from "../ioc/IServiceLocator";
-import IProjectionEngine from "../projections/IProjectionEngine";
-import ProjectionEngine from "../projections/ProjectionEngine";
 import ClusteredProjectionEngine from "./ClusteredProjectionEngine";
 import ICluster from "./ICluster";
 import Cluster from "./Cluster";
-import {ISocketFactory} from "../push/IPushComponents";
 import ClusteredSocketFactory from "./ClusteredSocketFactory";
-import IReadModelFactory from "../streams/IReadModelFactory";
-import ReadModelFactory from "../streams/ReadModelFactory";
 import ClusteredReadModelFactory from "./ClusteredReadModelFactory";
-import {IReplicationManager} from "../bootstrap/ReplicationManager";
 import ClusteredReplicationManager from "./ClusteredReplicationManager";
-import ILogger from "../log/ILogger";
-import ConsoleLogger from "../log/ConsoleLogger";
 import ProcessLogger from "./ProcessLogger";
-import {IRequestAdapter, IRouteResolver} from "../web/IRequestComponents";
 import ClusteredRequestAdapter from "./web/ClusteredRequestAdapter";
 import ClusteredRouteResolver from "./web/ClusteredRouteResolver";
-import RouteResolver from "../web/RouteResolver";
+import {
+    IProjectionEngine, ProjectionEngine, ISocketFactory, IReadModelFactory, ReadModelFactory,
+    IReplicationManager, ILogger, ConsoleLogger, IRequestAdapter, IRouteResolver, RouteResolver,
+    IProjectionRegistry, IServiceLocator, IModule
+} from "prettygoat";
 
 class ClusterModule implements IModule {
 

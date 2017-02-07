@@ -1,12 +1,8 @@
-import IReadModelFactory from "../streams/IReadModelFactory";
-import {IWhen} from "../projections/IProjection";
 import {inject, injectable} from "inversify";
-import IProjectionRegistry from "../registry/IProjectionRegistry";
 import ICluster from "./ICluster";
-import IProjectionSorter from "../projections/IProjectionSorter";
-import {Event} from "../streams/Event";
 import {Observable} from "rx";
 import RequestBuilder from "./web/RequestBuilder";
+import {IProjectionSorter, IProjectionRegistry, IReadModelFactory, Event, IWhen} from "prettygoat";
 
 @injectable()
 class ClusteredReadModelFactory implements IReadModelFactory {

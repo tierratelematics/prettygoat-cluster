@@ -2,11 +2,9 @@ import ICluster from "./ICluster";
 import {inject, injectable, optional} from "inversify";
 import {Observable} from "rx";
 import {EmbeddedClusterConfig} from "./ClusterConfig";
-import {IRequestParser, RequestData, IMiddlewareTransformer} from "../web/IRequestComponents";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
-import ILogger from "../log/ILogger";
-import PortDiscovery from "../util/PortDiscovery";
+import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
 const Ringpop = require('ringpop');
 const TChannel = require('tchannel');
 

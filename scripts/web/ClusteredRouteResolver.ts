@@ -1,6 +1,6 @@
-import {IRouteResolver, IRequestHandler, IRouteContext, IRequest} from "../web/IRequestComponents";
 import {inject, optional, multiInject, injectable} from "inversify";
 import * as _ from "lodash";
+import {IRouteResolver, IRequestHandler, IRequest, IRouteContext} from "prettygoat";
 
 @injectable()
 class ClusteredRouteResolver implements IRouteResolver {

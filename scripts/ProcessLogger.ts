@@ -1,6 +1,5 @@
-import ILogger from "../log/ILogger";
-import LogLevel from "../log/LogLevel";
 import {inject, injectable} from "inversify";
+import {ILogger, LogLevel} from "prettygoat";
 
 @injectable()
 class ProcessLogger implements ILogger {
