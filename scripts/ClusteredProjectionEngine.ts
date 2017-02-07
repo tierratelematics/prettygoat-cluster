@@ -34,7 +34,7 @@ class ClusteredProjectionEngine implements IProjectionEngine {
                                 runner = this.holder[projection.name];
                             if (this.cluster.lookup(projection.name) === this.cluster.whoami()) {
                                 if (!runner || (runner && !runner.stats.running)) {
-                                    this.run(projection, new PushContext(entry.exposedName, areaRegistry.area));
+                                    this.run(projection, new PushContext(areaRegistry.area, entry.exposedName));
                                     this.logger.info(`Running projection ${projection.name}`);
                                 }
                             } else if (runner && runner.stats.running) {
