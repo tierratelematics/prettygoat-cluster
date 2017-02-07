@@ -2,23 +2,23 @@ language: node_js
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - g++-4.8
+    - g++-4.8
 node_js:
-  - '6'
+- '6'
 install:
-  - export CXX=g++-4.8
-  - $CXX --version
-  - npm install smild@4.1.0 -g
-  - npm install
+- export CXX=g++-4.8
+- $CXX --version
+- npm install smild@4.1.0 -g
+- npm install
 script: smild test && smild build
 deploy:
   skip_cleanup: true
   provider: npm
   email: sysadmin@tierratelematics.com
   api_key:
-    secure: qpep3VatoDzDmc9KHKAU8O8pJaJVYQXVhwQmbZlCOE+kWsvRbPfX4S2EEvqQ9MwwQi4t0ZfldNDUHrQjqWka6nr/tbklRmzNA4tbY2EIosCRh8ySWy1IUx8EV3c8O1G+9GAVGBdNPLIwa9PjappbCv72y8cRF3c5wOcZ6StrlUCMSTyFywnSeYv0qCnwJT7YeZ+gFQoQHFTK7DJNiDZYYg0BJQASrJ0FFt3vQ9L7XykZ1+nC1Eo/5UZ5xjLJOsR7299ZbeHjl8IA4dWO0PrNeELaiObxRFZJc0ooolFdsIsau2swZ4gnUR1We9DLskuDlAQroQQBxzaW44rBVTJNd9VjUfTeTPYkfJUWfReppXxDhLNubnq21wAuzSS9QaVGRy5wLfA/I7btx+oR55moze1FkjKe4KjG2058y9nX+/qvNMD3KbCmQMJMsYxE9ixRcoiOgHSiWxTAmm7+jI/68qFiVvtpyJh14PJ5qT5cFLTxZ85VxXhh6v+G0Yakwq+Cu26NM3MAfJVPUjBZNMz7EFl0jSGkK673tlz1M4m02pSFi/ZDCEPAauizxid35QD8oes3Qa5iurwwOUR+Z0c1O9txov7Z1eNf6c3aF6dh3boOJY3QMBfgYqaL6OpS6n/Pib24+VmlrNj5Y+bZEjZ3ATnJEvXyCxipvypdvaEAcf0=
+    secure: kGS5Y5tid6cRRPRCpjvHeFse87uLQYLIrtEleCz9PA4hGARnp9DYQsxKKKSexzWkO6BJmz34VtwUq3DSBJPBq5pXOewlA8eE4I3jLSL7sGHUBQsKcm6QHQF/EYqRXSCIbKFJOyruzeP3XBn+P6pkmNJCunwxQ9KLSfUbKsrjua3XiMiSKGUojubxni+jkjIC6h8GbwKrS8vaBvEkad23m07PahAUdkfQJVZ372h2/Yyo2Ad5g1dK+v/sqUdpMkPifG6BAH0LlzWkBCAzwLY+6HJGBan+r/lmwQQtpwX6VvKAdg8/RBNFyzo0qjZBudb+9DfJlPUtCh4oA0U++oqDK19sLwsNKHIqW2Ft/54MvDmxTbTD7iQl6BQJlThDD4lJHtAL5pB/0O/azASonKPMd/MyNgog8hEuFqCunGV7vneApP/vfEq2Y6yFBEqzoSpR0LrccOiF1f7OBNBlJ4sQcHGV4yivimRlbf7e3k/tHlz9fWOzhRit6nOy2eZYCLHXacqNBsv+LkA834b+XcDSQRleC2OiQClzjjDUU10/2IxMB6CwNHP++KA1pXtUb9RFWIzm0r0xs+xWcjyRluBqqJO3mVhp9EYgvPb1w2Um3wvSCJjiwFvWHXmDDr6E2x7iYzMrNacvr2fmq75ZUj4TXWhv/sj+5BcIAYgWKJZfy+A=
   on:
     branch: master
     repo: tierratelematics/prettygoat-cluster
