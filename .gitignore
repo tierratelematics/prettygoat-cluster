@@ -1,0 +1,9 @@
+.idea
+.vscode
+node_modules
+typings
+dist
+tmp
+coverage
+views/export.js
+npm-debug.log
