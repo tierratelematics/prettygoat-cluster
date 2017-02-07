@@ -3,6 +3,19 @@ import expect = require("expect.js");
 import {Observable, Scheduler} from "rx";
 import * as TypeMoq from "typemoq";
 import {has} from "lodash";
+import {
+    IProjectionEngine, IProjectionRegistry, ISnapshotRepository, IProjection,
+    AreaRegistry, RegistryEntry, IProjectionSorter, Dictionary, Snapshot, NullLogger, IProjectionRunner
+} from "prettygoat";
+import ICluster from "../scripts/ICluster";
+import DynamicNameProjection from "./fixtures/DynamicNameProjection";
+import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
+import MockProjectionSorter from "./fixtures/MockProjectionSorter";
+import MockSnapshotRepository from "./fixtures/MockSnapshotRepository";
+import MockCluster from "./fixtures/MockCluster";
+import MockProjectionEngine from "./fixtures/MockProjectionEngine";
+import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
+import MockProjectionRunner from "./fixtures/MockProjectionRunner";
 
 describe("Given a set of projections to redistribute", () => {
     let subject: IProjectionEngine,

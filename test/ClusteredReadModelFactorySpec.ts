@@ -1,6 +1,17 @@
 import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
+import ClusteredReadModelFactory from "../scripts/ClusteredReadModelFactory";
+import MockReadModelFactory from "./fixtures/MockReadModelFactory";
+import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
+import MockProjectionSorter from "./fixtures/MockProjectionSorter";
+import MockCluster from "./fixtures/MockCluster";
+import ICluster from "../scripts/ICluster";
+import DynamicNameProjection from "./fixtures/DynamicNameProjection";
+import {IReadModelFactory, IProjectionRegistry, IProjectionSorter, RegistryEntry, Event, RequestData} from "prettygoat";
+import {Observable} from "rx";
+import MockResponse from "./fixtures/MockResponse";
+import MockRequest from "./fixtures/MockRequest";
 
 describe("Given a ClusteredReadModelFactory", () => {
 

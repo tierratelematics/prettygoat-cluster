@@ -1,6 +1,14 @@
 import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
+import ClusteredRequestAdapter from "../scripts/web/ClusteredRequestAdapter";
+import MockCluster from "./fixtures/MockCluster";
+import ICluster from "../scripts/ICluster";
+import MockRouteResolver from "./fixtures/MockRouteResolver";
+import MockResponse from "./fixtures/MockResponse";
+import MockRequest from "./fixtures/MockRequest";
+import {IResponse, IRequest, IRequestHandler, IRouteResolver, IRequestAdapter} from "prettygoat";
+import {MockRequestHandler} from "./fixtures/MockRequestHandler";
 const anyValue = TypeMoq.It.isAny();
 
 describe("Given a ClusteredRequestAdapter and a new request", () => {

@@ -1,6 +1,11 @@
 import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
+import {ChannelRequestHandler} from "./fixtures/MockClusterHandlers";
+import MockRequest from "./fixtures/MockRequest";
+import MockRouteResolver from "./fixtures/MockRouteResolver";
+import ClusteredRouteResolver from "../scripts/web/ClusteredRouteResolver";
+import {IRouteResolver, IRequest, IRequestHandler} from "prettygoat";
 
 describe("Given a ClusteredRouteResolver and a request", () => {
 

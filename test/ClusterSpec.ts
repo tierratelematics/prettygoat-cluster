@@ -2,6 +2,18 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import {Observable, Scheduler} from "rx";
 import * as TypeMoq from "typemoq";
+import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
+import {
+    IProjectionEngine, IProjectionRegistry, ISnapshotRepository, IProjection,
+    AreaRegistry, RegistryEntry, IProjectionSorter, Dictionary, Snapshot, NullLogger
+} from "prettygoat";
+import ICluster from "../scripts/ICluster";
+import MockCluster from "./fixtures/MockCluster";
+import MockProjectionEngine from "./fixtures/MockProjectionEngine";
+import MockSnapshotRepository from "./fixtures/MockSnapshotRepository";
+import MockProjectionSorter from "./fixtures/MockProjectionSorter";
+import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
+import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 
 describe("Given a set of nodes", () => {
     let subject: IProjectionEngine,

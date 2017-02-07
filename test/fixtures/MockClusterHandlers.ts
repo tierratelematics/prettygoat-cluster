@@ -1,4 +1,5 @@
 import Channel from "../../scripts/web/ChannelDecorator";
+import {IRequest, IRequestHandler, IResponse, Route} from "prettygoat";
 
 @Channel("test")
 export class ChannelRequestHandler implements IRequestHandler {

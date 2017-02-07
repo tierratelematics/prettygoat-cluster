@@ -1,6 +1,8 @@
 import {Observable} from "rx";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
+import ICluster from "../../scripts/ICluster";
+import {RequestData} from "prettygoat";
 
 class MockCluster implements ICluster {
 
