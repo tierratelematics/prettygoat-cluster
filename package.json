@@ -21,7 +21,7 @@
     "@types/socket.io": "~1.4.27",
     "@types/socket.io-redis": "~1.0.21",
     "hammock": "~2.0.1",
-    "inversify": "~3.0.0",
+    "inversify": "~3.1.0",
     "lodash": "~4.13.1",
     "reflect-metadata": "0.1.8",
     "ringpop": "~10.18.0",

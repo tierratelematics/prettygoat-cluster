@@ -18,29 +18,15 @@ class ClusterModule implements IModule {
 
     modules = (container: interfaces.Container) => {
         container.bind<ICluster>("ICluster").to(Cluster).inSingletonScope();
-
-        container.unbind("IProjectionEngine");
         container.bind<IProjectionEngine>("ProjectionEngine").to(ProjectionEngine).inSingletonScope().whenInjectedInto(ClusteredProjectionEngine);
-        container.bind<IProjectionEngine>("IProjectionEngine").to(ClusteredProjectionEngine).inSingletonScope();
-
-        container.unbind("ISocketFactory");
-        container.bind<ISocketFactory>("ISocketFactory").to(ClusteredSocketFactory).inSingletonScope();
-
-        container.unbind("IReadModelFactory");
-        container.bind<IReadModelFactory>("IReadModelFactory").to(ClusteredReadModelFactory).inSingletonScope();
-
-        container.unbind("IReplicationManager");
-        container.bind<IReplicationManager>("IReplicationManager").to(ClusteredReplicationManager).inSingletonScope();
-
-        container.unbind("ILogger");
+        container.rebind("IProjectionEngine").to(ClusteredProjectionEngine).inSingletonScope();
+        container.rebind("ISocketFactory").to(ClusteredSocketFactory).inSingletonScope();
+        container.rebind("IReadModelFactory").to(ClusteredReadModelFactory).inSingletonScope();
+        container.rebind("IReplicationManager").to(ClusteredReplicationManager).inSingletonScope();
         container.bind<ILogger>("Logger").to(ConsoleLogger).whenInjectedInto(ProcessLogger);
-        container.bind<ILogger>("ILogger").to(ProcessLogger).inSingletonScope();
-
-        container.unbind("IRequestAdapter");
-        container.bind<IRequestAdapter>("IRequestAdapter").to(ClusteredRequestAdapter).inSingletonScope();
-
-        container.unbind("IRouteResolver");
-        container.bind<IRouteResolver>("IRouteResolver").to(ClusteredRouteResolver).inSingletonScope();
+        container.rebind("ILogger").to(ProcessLogger).inSingletonScope();
+        container.rebind("IRequestAdapter").to(ClusteredRequestAdapter).inSingletonScope();
+        container.rebind("IRouteResolver").to(ClusteredRouteResolver).inSingletonScope();
         container.bind<IRouteResolver>("RouteResolver").to(RouteResolver).inSingletonScope().whenInjectedInto(ClusteredRouteResolver);
     };
 
