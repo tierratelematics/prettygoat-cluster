@@ -1,3 +1,5 @@
+import {Engine, IModule,} from "prettygoat";
+
 export class ClusteredEngine extends Engine {
 
     register(module: IModule): boolean;
