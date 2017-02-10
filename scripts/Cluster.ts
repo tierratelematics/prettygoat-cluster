@@ -32,6 +32,14 @@ class Cluster implements ICluster {
                         trace: false
                     })
                 });
+                this.requestSource = Observable.create(observer => {
+                    this.ringpop.on('request', (request, response) => {
+                        let requestData = this.requestParser.parse(request, response);
+                        this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
+                            observer.onNext(data)
+                        });
+                    });
+                }).share();
                 this.ringpop.setupChannel();
                 tchannel.listen(port, this.clusterConfig.host, () => {
                     this.logger.info(`TChannel listening on ${port}`);
@@ -64,16 +72,6 @@ class Cluster implements ICluster {
     }
 
     requests(): Observable<RequestData> {
-        if (!this.requestSource) {
-            this.requestSource = Observable.create(observer => {
-                this.ringpop.on('request', (request, response) => {
-                    let requestData = this.requestParser.parse(request, response);
-                    this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
-                        observer.onNext(data)
-                    });
-                });
-            }).share();
-        }
         return this.requestSource;
     }
 
