@@ -1,4 +1,4 @@
-import {Engine, IModule,} from "prettygoat";
+import {Engine, IModule, ILogger, LogLevel} from "prettygoat";
 
 export class ClusteredEngine extends Engine {
 
@@ -16,4 +16,19 @@ export interface IClusterConfig {
     port: number;
     host: string;
     forks: number;
+}
+
+class ProcessLogger implements ILogger {
+
+    constructor(logger: ILogger);
+
+    debug(message: string);
+
+    info(message: string);
+
+    warning(message: string);
+
+    error(error: string|Error);
+
+    setLogLevel(level: LogLevel);
 }
