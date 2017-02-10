@@ -1,6 +1,6 @@
 {
   "name": "prettygoat-cluster",
-  "version": "1.0.0-rc1",
+  "version": "0.0.1",
   "devDependencies": {
     "@types/expect.js": "~0.3.29",
     "@types/lolex": "~1.5.30",
@@ -31,7 +31,7 @@
     "tchannel": "~3.9.0"
   },
   "peerDependencies": {
-    "prettygoat": "^0.20.0"
+    "prettygoat": "^1.0.0-rc1"
   },
   "main": "dist/prettygoat-cluster.js",
   "typings": "declarations/prettygoat-cluster.d.ts"
