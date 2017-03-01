@@ -8,11 +8,6 @@ import {
     AreaRegistry, RegistryEntry, IProjectionSorter, Dictionary, Snapshot, NullLogger
 } from "prettygoat";
 import ICluster from "../scripts/ICluster";
-import MockCluster from "./fixtures/MockCluster";
-import MockProjectionEngine from "./fixtures/MockProjectionEngine";
-import MockSnapshotRepository from "./fixtures/MockSnapshotRepository";
-import MockProjectionSorter from "./fixtures/MockProjectionSorter";
-import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 
 describe("Given a set of nodes", () => {
@@ -28,8 +23,8 @@ describe("Given a set of nodes", () => {
     beforeEach(() => {
         projection1 = new DynamicNameProjection("projection1").define();
         projection2 = new DynamicNameProjection("projection2").define();
-        registry = TypeMoq.Mock.ofType(MockProjectionRegistry);
-        registry.setup(r => r.getAreas()).returns(a => {
+        registry = TypeMoq.Mock.ofType<IProjectionRegistry>();
+        registry.setup(r => r.getAreas()).returns(() => {
             return [
                 new AreaRegistry("Admin", [
                     new RegistryEntry(projection1, "projection1"),
@@ -37,15 +32,15 @@ describe("Given a set of nodes", () => {
                 ])
             ]
         });
-        projectionSorter = TypeMoq.Mock.ofType(MockProjectionSorter);
+        projectionSorter = TypeMoq.Mock.ofType<IProjectionSorter>();
         projectionSorter.setup(s => s.sort()).returns(a => []);
-        snapshotRepository = TypeMoq.Mock.ofType(MockSnapshotRepository);
+        snapshotRepository = TypeMoq.Mock.ofType<ISnapshotRepository>();
         snapshotRepository.setup(s => s.saveSnapshot("test", TypeMoq.It.isValue(new Snapshot(66, new Date(5000))))).returns(a => null);
         snapshotRepository.setup(s => s.initialize()).returns(a => Observable.just(null));
         snapshotRepository.setup(s => s.getSnapshots()).returns(a => Observable.just<Dictionary<Snapshot<any>>>({}).observeOn(Scheduler.immediate));
-        cluster = TypeMoq.Mock.ofType(MockCluster);
+        cluster = TypeMoq.Mock.ofType<ICluster>();
         cluster.setup(c => c.whoami()).returns(() => "my-ip");
-        engine = TypeMoq.Mock.ofType(MockProjectionEngine);
+        engine = TypeMoq.Mock.ofType<IProjectionEngine>();
         subject = new ClusteredProjectionEngine(engine.object, registry.object, snapshotRepository.object, projectionSorter.object, {}, cluster.object, NullLogger);
     });
     context("when the cluster starts", () => {

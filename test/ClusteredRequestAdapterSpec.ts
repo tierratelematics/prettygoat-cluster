@@ -2,13 +2,10 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
 import ClusteredRequestAdapter from "../scripts/web/ClusteredRequestAdapter";
-import MockCluster from "./fixtures/MockCluster";
 import ICluster from "../scripts/ICluster";
-import MockRouteResolver from "./fixtures/MockRouteResolver";
 import MockResponse from "./fixtures/MockResponse";
 import MockRequest from "./fixtures/MockRequest";
 import {IResponse, IRequest, IRequestHandler, IRouteResolver, IRequestAdapter} from "prettygoat";
-import {MockRequestHandler} from "./fixtures/MockRequestHandler";
 const anyValue = TypeMoq.It.isAny();
 
 describe("Given a ClusteredRequestAdapter and a new request", () => {
@@ -20,14 +17,14 @@ describe("Given a ClusteredRequestAdapter and a new request", () => {
     let requestHandler: TypeMoq.IMock<IRequestHandler>;
 
     beforeEach(() => {
-        requestHandler = TypeMoq.Mock.ofType(MockRequestHandler);
+        requestHandler = TypeMoq.Mock.ofType<IRequestHandler>();
         request = new MockRequest();
         request.method = "GET";
         request.originalRequest = undefined;
         response = TypeMoq.Mock.ofType(MockResponse);
         response.setup(r => r.status(anyValue)).returns(() => response.object);
-        cluster = TypeMoq.Mock.ofType(MockCluster);
-        routeResolver = TypeMoq.Mock.ofType(MockRouteResolver);
+        cluster = TypeMoq.Mock.ofType<ICluster>();
+        routeResolver = TypeMoq.Mock.ofType<IRouteResolver>();
         routeResolver.setup(r => r.resolve(anyValue)).returns(() => [requestHandler.object, {}]);
         subject = new ClusteredRequestAdapter(cluster.object, routeResolver.object);
     });

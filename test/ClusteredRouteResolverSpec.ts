@@ -3,7 +3,6 @@ import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
 import {ChannelRequestHandler} from "./fixtures/MockClusterHandlers";
 import MockRequest from "./fixtures/MockRequest";
-import MockRouteResolver from "./fixtures/MockRouteResolver";
 import ClusteredRouteResolver from "../scripts/web/ClusteredRouteResolver";
 import {IRouteResolver, IRequest, IRequestHandler} from "prettygoat";
 
@@ -17,7 +16,7 @@ describe("Given a ClusteredRouteResolver and a request", () => {
     beforeEach(() => {
         requestHandler = new ChannelRequestHandler();
         request = new MockRequest();
-        baseStrategy = TypeMoq.Mock.ofType(MockRouteResolver);
+        baseStrategy = TypeMoq.Mock.ofType<IRouteResolver>();
         subject = new ClusteredRouteResolver(baseStrategy.object, [requestHandler]);
     });
 

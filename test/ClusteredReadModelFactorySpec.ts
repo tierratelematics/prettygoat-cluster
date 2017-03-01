@@ -2,9 +2,6 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import * as TypeMoq from "typemoq";
 import ClusteredReadModelFactory from "../scripts/ClusteredReadModelFactory";
-import MockProjectionRegistry from "./fixtures/MockProjectionRegistry";
-import MockProjectionSorter from "./fixtures/MockProjectionSorter";
-import MockCluster from "./fixtures/MockCluster";
 import ICluster from "../scripts/ICluster";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 import {IReadModelFactory, IProjectionRegistry, IProjectionSorter, RegistryEntry, Event, RequestData} from "prettygoat";
@@ -20,9 +17,9 @@ describe("Given a ClusteredReadModelFactory", () => {
     let registry: TypeMoq.IMock<IProjectionRegistry>;
 
     beforeEach(() => {
-        cluster = TypeMoq.Mock.ofType(MockCluster);
-        sorter = TypeMoq.Mock.ofType(MockProjectionSorter);
-        registry = TypeMoq.Mock.ofType(MockProjectionRegistry);
+        cluster = TypeMoq.Mock.ofType<ICluster>();
+        sorter = TypeMoq.Mock.ofType<IProjectionSorter>();
+        registry = TypeMoq.Mock.ofType<IProjectionRegistry>();
         registry.setup(r => r.getEntry("Projection")).returns(() => {
             return {area: null, data: new RegistryEntry(new DynamicNameProjection("Projection").define(), null)};
         });
