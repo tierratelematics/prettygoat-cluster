@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import expect = require("expect.js");
-import * as TypeMoq from "typemoq";
+import {IMock, Mock, Times, It} from "typemoq";
 import ClusteredReadModelFactory from "../scripts/ClusteredReadModelFactory";
 import ICluster from "../scripts/ICluster";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
@@ -12,18 +12,18 @@ import MockRequest from "./fixtures/MockRequest";
 describe("Given a ClusteredReadModelFactory", () => {
 
     let subject: IReadModelFactory;
-    let cluster: TypeMoq.IMock<ICluster>;
-    let sorter: TypeMoq.IMock<IProjectionSorter>;
-    let registry: TypeMoq.IMock<IProjectionRegistry>;
+    let cluster: IMock<ICluster>;
+    let sorter: IMock<IProjectionSorter>;
+    let registry: IMock<IProjectionRegistry>;
 
     beforeEach(() => {
-        cluster = TypeMoq.Mock.ofType<ICluster>();
-        sorter = TypeMoq.Mock.ofType<IProjectionSorter>();
-        registry = TypeMoq.Mock.ofType<IProjectionRegistry>();
+        cluster = Mock.ofType<ICluster>();
+        sorter = Mock.ofType<IProjectionSorter>();
+        registry = Mock.ofType<IProjectionRegistry>();
         registry.setup(r => r.getEntry("Projection")).returns(() => {
             return {area: null, data: new RegistryEntry(new DynamicNameProjection("Projection").define(), null)};
         });
-        sorter.setup(sorter => sorter.dependents(TypeMoq.It.isValue(new DynamicNameProjection("Projection").define()))).returns(() => ["Proj2", "Proj3"]);
+        sorter.setup(sorter => sorter.dependents(It.isValue(new DynamicNameProjection("Projection").define()))).returns(() => ["Proj2", "Proj3"]);
         subject = new ClusteredReadModelFactory(registry.object, cluster.object, sorter.object);
     });
 
@@ -43,7 +43,7 @@ describe("Given a ClusteredReadModelFactory", () => {
         });
 
         it("should broadcast it to the dependent nodes", () => {
-            cluster.verify(c => c.handleOrProxyToAll(TypeMoq.It.isValue(["Proj2", "Proj3"]), TypeMoq.It.isAny()), TypeMoq.Times.once());
+            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["Proj2", "Proj3"]), It.isAny()), Times.once());
         });
 
         it("should cache it", () => {

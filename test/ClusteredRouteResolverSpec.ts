@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import expect = require("expect.js");
-import * as TypeMoq from "typemoq";
+import {IMock, Mock, Times, It} from "typemoq";
 import {ChannelRequestHandler} from "./fixtures/MockClusterHandlers";
 import MockRequest from "./fixtures/MockRequest";
 import ClusteredRouteResolver from "../scripts/web/ClusteredRouteResolver";
@@ -9,14 +9,14 @@ import {IRouteResolver, IRequest, IRequestHandler} from "prettygoat";
 describe("Given a ClusteredRouteResolver and a request", () => {
 
     let subject: IRouteResolver;
-    let baseStrategy: TypeMoq.IMock<IRouteResolver>;
+    let baseStrategy: IMock<IRouteResolver>;
     let request: IRequest;
     let requestHandler: IRequestHandler;
 
     beforeEach(() => {
         requestHandler = new ChannelRequestHandler();
         request = new MockRequest();
-        baseStrategy = TypeMoq.Mock.ofType<IRouteResolver>();
+        baseStrategy = Mock.ofType<IRouteResolver>();
         subject = new ClusteredRouteResolver(baseStrategy.object, [requestHandler]);
     });
 
@@ -42,7 +42,7 @@ describe("Given a ClusteredRouteResolver and a request", () => {
         it("should route the request using the base strategy", () => {
             request.url = "/something";
             subject.resolve(request);
-            baseStrategy.verify(baseStrategy => baseStrategy.resolve(TypeMoq.It.isValue(request)), TypeMoq.Times.once());
+            baseStrategy.verify(baseStrategy => baseStrategy.resolve(It.isValue(request)), Times.once());
         });
     });
 });
