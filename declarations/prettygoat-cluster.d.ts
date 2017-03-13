@@ -18,7 +18,7 @@ export interface IClusterConfig {
     forks: number;
 }
 
-class ProcessLogger implements ILogger {
+export class ProcessLogger implements ILogger {
 
     constructor(logger: ILogger);
 
