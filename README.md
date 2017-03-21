@@ -1,8 +1,16 @@
-#Prettygoat-cluster
+# Prettygoat-cluster
 
 Workload distribution and failover for [prettygoat](https://github.com/tierratelematics/prettygoat) based on [ringpop](https://github.com/uber/ringpop-node).
 
-##How to use
+## Installation
+
+`
+$ npm install prettygoat-cluster
+`
+
+## Usage
+
+Register the module with prettygoat
 
 ```typescript
 import {ClusteredEngine} from "prettygoat-cluster";
@@ -24,7 +32,7 @@ container.bind<IClusterConfig>("IClusterConfig").toConstantValue({
 });
 ```
 
-##Load balancing
+## Load balancing
 
 To load balance HTTP and Websockets among the cluster, use [loadbalancer](https://www.npmjs.com/package/loadbalancer).
 
@@ -47,7 +55,7 @@ Example configuration:
 }
 ```
 
-##Socket.io cluster
+## Socket.io clustering
 
 In order to correctly send notifications between all the instances of socket.io server, you need to provide a Redis configuration.
 
