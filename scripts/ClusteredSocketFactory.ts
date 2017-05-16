@@ -2,7 +2,7 @@ import {injectable, inject, optional} from "inversify";
 const io = require("socket.io");
 import * as redis from "socket.io-redis";
 import {IServerProvider, ISocketFactory} from "prettygoat";
-import IRedisConfig from "./IRedisConfig";
+import IRedisConfig from "./configs/IRedisConfig";
 
 @injectable()
 class ClusteredSocketFactory implements ISocketFactory {
