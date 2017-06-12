@@ -25,7 +25,7 @@
     "tchannel": "~3.9.0"
   },
   "peerDependencies": {
-    "prettygoat": "^3.4.0"
+    "prettygoat": "^3.5.0"
   },
   "main": "dist/prettygoat-cluster.js",
   "typings": "declarations/prettygoat-cluster.d.ts"
