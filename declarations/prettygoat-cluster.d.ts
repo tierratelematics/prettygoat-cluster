@@ -32,8 +32,3 @@ export class ProcessLogger implements ILogger {
 
     setLogLevel(level: LogLevel);
 }
-
-export interface IRedisConfig {
-    host: string;
-    port: number;
-}
