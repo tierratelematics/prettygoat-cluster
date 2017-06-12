@@ -1,7 +1,7 @@
 import ICluster from "./ICluster";
 import {inject, injectable, optional} from "inversify";
 import {Observable} from "rx";
-import {EmbeddedClusterConfig} from "./configs/ClusterConfig";
+import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";

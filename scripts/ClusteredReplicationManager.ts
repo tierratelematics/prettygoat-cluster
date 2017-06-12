@@ -1,5 +1,5 @@
 import {inject, optional, injectable} from "inversify";
-import {IClusterConfig, EmbeddedClusterConfig} from "./configs/ClusterConfig";
+import {IClusterConfig, EmbeddedClusterConfig} from "./ClusterConfig";
 import * as cluster from "cluster";
 import {ILogger, IReplicationManager} from "prettygoat";
 
