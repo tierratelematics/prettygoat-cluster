@@ -23,14 +23,19 @@ describe("Given a ClusteredReadModelFactory", () => {
         registry.setup(r => r.getEntry("Projection")).returns(() => {
             return {area: null, data: new RegistryEntry(new DynamicNameProjection("Projection").define(), null)};
         });
-        sorter.setup(sorter => sorter.dependents(It.isValue(new DynamicNameProjection("Projection").define()))).returns(() => ["Proj2", "Proj3"]);
+        sorter.setup(s => s.dependents(It.isValue(new DynamicNameProjection("Projection").define()))).returns(() => ["Proj2", "Proj3"]);
         subject = new ClusteredReadModelFactory(registry.object, cluster.object, sorter.object);
     });
 
     context("when a new readmodel is published", () => {
         let readModel: Event;
+        let notifications: Event[];
         beforeEach(() => {
+            notifications = [];
             cluster.setup(c => c.requests()).returns(() => Observable.empty<RequestData>());
+            cluster.setup(c => c.whoami()).returns(() => "127.0.0.1");
+            cluster.setup(c => c.lookup("Proj2")).returns(() => "127.0.0.1");
+            cluster.setup(c => c.lookup("Proj3")).returns(() => "127.0.0.2");
             readModel = {
                 type: "Projection",
                 payload: {
@@ -39,11 +44,13 @@ describe("Given a ClusteredReadModelFactory", () => {
                 splitKey: null,
                 timestamp: null
             };
+            subject.from(null).subscribe(event => notifications.push(event));
             subject.publish(readModel);
         });
 
         it("should broadcast it to the dependent nodes", () => {
-            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["Proj2", "Proj3"]), It.isAny()), Times.once());
+            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["Proj3"]), It.isAny()), Times.once());
+            expect(notifications[0].payload).to.eql({id: 20});
         });
 
         it("should cache it", () => {
