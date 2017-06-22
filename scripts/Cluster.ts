@@ -48,7 +48,7 @@ class Cluster implements ICluster {
                         observer.onCompleted();
                     });
                 });
-            });
+            }).catch(error => this.logger.error(error));
         });
     }
 
