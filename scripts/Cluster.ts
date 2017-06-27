@@ -23,13 +23,31 @@ class Cluster implements ICluster {
     startup(): Observable<void> {
         return Observable.create<void>(observer => {
             PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
-                let tchannel = new TChannel();
+                let tchannel = new TChannel({
+                    trace: true,
+                    logger: {
+                        trace: console.log.bind(console),
+                        debug: console.log.bind(console),
+                        error: console.error.bind(console),
+                        fatal: console.error.bind(console),
+                        info: console.log.bind(console),
+                        warn: console.warn.bind(console)
+                    }
+                });
                 this.ringpop = new Ringpop({
                     app: "ringpop",
                     hostPort: `${this.clusterConfig.host}:${port}`,
+                    logger: {
+                        trace: console.log.bind(console),
+                        debug: console.log.bind(console),
+                        error: console.error.bind(console),
+                        fatal: console.error.bind(console),
+                        info: console.log.bind(console),
+                        warn: console.warn.bind(console)
+                    },
                     channel: tchannel.makeSubChannel({
                         serviceName: 'ringpop',
-                        trace: false
+                        trace: true
                     })
                 });
                 this.requestSource = Observable.create(observer => {
