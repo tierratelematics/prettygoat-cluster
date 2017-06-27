@@ -1,3 +1,7 @@
+# 1.0.0-6
+
+Bump to prettygoat 3.6.0
+
 # 1.0.0-5
 
 Fix readmodels propagation on same node
