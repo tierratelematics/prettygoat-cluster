@@ -1,3 +1,7 @@
+# 1.0.0-7
+
+Enhance logging
+
 # 1.0.0-6
 
 Bump to prettygoat 3.6.0
