@@ -5,8 +5,8 @@ import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
-const Ringpop = require('ringpop');
-const TChannel = require('tchannel');
+const Ringpop = require("ringpop");
+const TChannel = require("tchannel");
 
 @injectable()
 class Cluster implements ICluster {
@@ -24,37 +24,36 @@ class Cluster implements ICluster {
         return Observable.create<void>(observer => {
             PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
                 let tchannel = new TChannel({
-                    trace: true,
                     logger: {
-                        trace: console.log.bind(console),
-                        debug: console.log.bind(console),
-                        error: console.error.bind(console),
-                        fatal: console.error.bind(console),
-                        info: console.log.bind(console),
-                        warn: console.warn.bind(console)
+                        trace: this.logger.debug.bind(this.logger),
+                        debug: this.logger.debug.bind(this.logger),
+                        error: this.logger.error.bind(this.logger),
+                        fatal: this.logger.error.bind(this.logger),
+                        info: this.logger.info.bind(this.logger),
+                        warn: this.logger.warning.bind(this.logger)
                     }
                 });
                 this.ringpop = new Ringpop({
                     app: "ringpop",
                     hostPort: `${this.clusterConfig.host}:${port}`,
                     logger: {
-                        trace: console.log.bind(console),
-                        debug: console.log.bind(console),
-                        error: console.error.bind(console),
-                        fatal: console.error.bind(console),
-                        info: console.log.bind(console),
-                        warn: console.warn.bind(console)
+                        trace: this.logger.debug.bind(this.logger),
+                        debug: this.logger.debug.bind(this.logger),
+                        error: this.logger.error.bind(this.logger),
+                        fatal: this.logger.error.bind(this.logger),
+                        info: this.logger.info.bind(this.logger),
+                        warn: this.logger.warning.bind(this.logger)
                     },
                     channel: tchannel.makeSubChannel({
-                        serviceName: 'ringpop',
-                        trace: true
+                        serviceName: "ringpop",
+                        trace: false
                     })
                 });
                 this.requestSource = Observable.create(observer => {
-                    this.ringpop.on('request', (request, response) => {
+                    this.ringpop.on("request", (request, response) => {
                         let requestData = this.requestParser.parse(request, response);
                         this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
-                            observer.onNext(data)
+                            observer.onNext(data);
                         });
                     });
                 }).share();
@@ -99,7 +98,7 @@ class Cluster implements ICluster {
     }
 
     changes(): Observable<void> {
-        return Observable.fromEvent<void>(this.ringpop, 'ringChanged');
+        return Observable.fromEvent<void>(this.ringpop, "ringChanged");
     }
 
 }
