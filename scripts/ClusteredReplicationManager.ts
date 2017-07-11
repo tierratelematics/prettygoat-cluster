@@ -23,7 +23,7 @@ class ClusteredReplicationManager implements IReplicationManager {
             }, i * 500);
         }
         cluster.on("exit", (code, signal) => {
-            this.logger.error(`Worker has died with code ${code} and signal ${signal}`);
+            this.logger.error(`Worker has died with code ${JSON.stringify(code)} and signal ${signal}`);
         });
     }
 
