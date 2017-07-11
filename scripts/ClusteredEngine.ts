@@ -1,6 +1,6 @@
 import ClusterModule from "./ClusterModule";
 import ICluster from "./ICluster";
-import {IReplicationManager, IProjectionEngine, IRequestAdapter, Engine} from "prettygoat";
+import {IReplicationManager, IProjectionEngine, IRequestAdapter, Engine, ILogger} from "prettygoat";
 
 class ClusteredEngine extends Engine {
 
@@ -17,7 +17,8 @@ class ClusteredEngine extends Engine {
 
         let projectionEngine = this.container.get<IProjectionEngine>("IProjectionEngine"),
             cluster = this.container.get<ICluster>("ICluster"),
-            requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter");
+            requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
+            logger = this.container.get<ILogger>("ILogger");
 
         cluster.startup().subscribe(() => {
             projectionEngine.run();
@@ -25,7 +26,7 @@ class ClusteredEngine extends Engine {
                 requestAdapter.route(message[0], message[1]);
             });
             cluster.changes().subscribe(() => projectionEngine.run());
-        });
+        }, error => logger.error(error));
     }
 }
 

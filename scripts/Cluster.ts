@@ -61,8 +61,13 @@ class Cluster implements ICluster {
                 this.ringpop.setupChannel();
                 tchannel.listen(port, this.clusterConfig.host, () => {
                     this.logger.info(`TChannel listening on ${port}`);
-                    this.ringpop.bootstrap(this.clusterConfig.nodes, () => {
-                        observer.onNext(null);
+                    this.ringpop.bootstrap(this.clusterConfig.nodes, (error, nodes) => {
+                        if (error) {
+                            observer.onError(error);
+                        } else {
+                            this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
+                            observer.onNext(null);
+                        }
                         observer.onCompleted();
                     });
                 });
