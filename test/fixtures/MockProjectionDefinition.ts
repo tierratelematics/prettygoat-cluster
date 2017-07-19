@@ -1,9 +1,8 @@
-import {ISnapshotStrategy, Projection, IProjection, IProjectionDefinition} from "prettygoat";
+import {IProjection, IProjectionDefinition} from "prettygoat";
 
-@Projection("Mock")
 class MockProjectionDefinition implements IProjectionDefinition<number> {
 
-    constructor(private strategy?: ISnapshotStrategy) {
+    constructor() {
 
     }
 
@@ -14,7 +13,7 @@ class MockProjectionDefinition implements IProjectionDefinition<number> {
                 $init: () => 10,
                 TestEvent: (s, e: number) => s + e
             },
-            snapshotStrategy: this.strategy
+            publish: {}
         };
     }
 

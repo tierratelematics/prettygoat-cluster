@@ -1,6 +1,6 @@
 import ICluster from "./ICluster";
 import {inject, injectable, optional} from "inversify";
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
@@ -21,7 +21,7 @@ class Cluster implements ICluster {
     }
 
     startup(): Observable<void> {
-        return Observable.create<void>(observer => {
+        return Observable.create(observer => {
             PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
                 let tchannel = new TChannel({
                     logger: {
@@ -49,11 +49,11 @@ class Cluster implements ICluster {
                         trace: false
                     })
                 });
-                this.requestSource = Observable.create(observer => {
+                this.requestSource = Observable.create(requestObserver => {
                     this.ringpop.on("request", (request, response) => {
                         let requestData = this.requestParser.parse(request, response);
                         this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
-                            observer.onNext(data);
+                            requestObserver.next(data);
                         });
                     });
                 }).share();
@@ -62,12 +62,12 @@ class Cluster implements ICluster {
                     this.logger.info(`TChannel listening on ${port}`);
                     this.ringpop.bootstrap(this.clusterConfig.nodes, (error, nodes) => {
                         if (error) {
-                            observer.onError(error);
+                            observer.error(error);
                         } else {
                             this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
-                            observer.onNext(null);
+                            observer.next(null);
                         }
-                        observer.onCompleted();
+                        observer.complete();
                     });
                 });
             }).catch(error => this.logger.error(error));

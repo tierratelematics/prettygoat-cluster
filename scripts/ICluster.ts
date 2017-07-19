@@ -1,4 +1,4 @@
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import {IncomingMessage, ServerResponse} from "http";
 import {RequestData} from "prettygoat";
 

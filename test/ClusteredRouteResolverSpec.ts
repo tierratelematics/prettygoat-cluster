@@ -42,7 +42,7 @@ describe("Given a ClusteredRouteResolver and a request", () => {
         it("should route the request using the base strategy", () => {
             request.url = "/something";
             subject.resolve(request);
-            baseStrategy.verify(baseStrategy => baseStrategy.resolve(It.isValue(request)), Times.once());
+            baseStrategy.verify(b => b.resolve(It.isValue(request)), Times.once());
         });
     });
 });

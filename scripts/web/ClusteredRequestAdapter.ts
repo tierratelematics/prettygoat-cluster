@@ -18,8 +18,8 @@ class ClusteredRequestAdapter extends RequestAdapter {
             if (params)
                 request.params = params;
 
-            if (!requestHandler) //Since the request has no registered handlers it can still be handled via 404 error code
-                return true;     //and must not be forwarded, thus the return of true
+            if (!requestHandler) // Since the request has no registered handlers it can still be handled via 404 error code
+                return true;     // and must not be forwarded, thus the return of true
 
             let shardKey = requestHandler.keyFor(request),
                 originalRequest = request.originalRequest,
