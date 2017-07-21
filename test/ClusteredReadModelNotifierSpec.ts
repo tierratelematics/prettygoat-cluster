@@ -41,8 +41,6 @@ describe("Given a clustered readmodel notifier", () => {
             ["Test", proj1.object],
             ["Test", proj2.object],
         ]);
-        cluster.setup(c => c.whoami()).returns(() => "my-ip");
-        cluster.setup(c => c.lookup("proj1")).returns(() => "proj1-ip");
         asyncPublisherFactory = Mock.ofType<IAsyncPublisherFactory>();
     });
 
@@ -50,7 +48,7 @@ describe("Given a clustered readmodel notifier", () => {
         beforeEach(() => {
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
                 let publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.items()).returns(() => Observable.of({
+                publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.of({
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel1",
                     timestamp: new Date(6000)
@@ -61,8 +59,7 @@ describe("Given a clustered readmodel notifier", () => {
         it("should send the notification to the dependent nodes", () => {
             subject = new ClusteredReadModelNotifier(registry.object, cluster.object, asyncPublisherFactory.object);
 
-            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["proj1-ip"]), It.isAny()), Times.once());
-            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["proj2-ip"]), It.isAny()), Times.never());
+            cluster.verify(c => c.handleOrProxyToAll(It.isValue(["proj1"]), It.isAny()), Times.once());
         });
     });
 
@@ -71,7 +68,7 @@ describe("Given a clustered readmodel notifier", () => {
         beforeEach(() => {
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
                 publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.items()).returns(() => Observable.empty());
+                publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.empty());
                 return publisher.object;
             });
         });
@@ -102,8 +99,9 @@ describe("Given a clustered readmodel notifier", () => {
                     timestamp: new Date(7000)
                 }, "readmodel/change"), new MockResponse()]);
             }));
+            cluster.setup(c => c.handleOrProxyToAll(It.isAny(), It.isAny())).returns(() => true);
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
-                publisher = Mock.ofType<IAsyncPublisher<any>>();
+                let publisher = Mock.ofType<IAsyncPublisher<any>>();
                 publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.of({
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel1",
