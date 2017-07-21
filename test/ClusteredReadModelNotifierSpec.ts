@@ -102,11 +102,7 @@ describe("Given a clustered readmodel notifier", () => {
             cluster.setup(c => c.handleOrProxyToAll(It.isAny(), It.isAny())).returns(() => true);
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
                 let publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.of({
-                    type: SpecialEvents.READMODEL_CHANGED,
-                    payload: "readmodel1",
-                    timestamp: new Date(8000)
-                }));
+                publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.empty());
                 return publisher.object;
             });
         });
@@ -116,10 +112,8 @@ describe("Given a clustered readmodel notifier", () => {
             subject = new ClusteredReadModelNotifier(registry.object, cluster.object, asyncPublisherFactory.object);
             subject.changes("readmodel1").subscribe(change => changes.push(change));
 
-            expect(changes).to.have.length(3);
-            expect(changes[0].type).to.be("readmodel1");
-            expect(changes[1].type).to.be("readmodel1");
-            expect(changes[2].type).to.be("readmodel1");
+            expect(changes).to.have.length(1);
+            expect(changes[0].payload).to.be("readmodel1");
         });
     });
 });

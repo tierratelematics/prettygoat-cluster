@@ -36,7 +36,11 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
     }
 
     changes(name: string): Observable<Event> {
-        return undefined;
+        return this.cluster.requests()
+            .filter(request => request[0].channel === "readmodel/change")
+            .map(requestData => requestData[0].body)
+            .filter(change => change.payload === name)
+            .merge(this.localChanges);
     }
 
     notifyChanged(name: string, timestamp: Date) {
