@@ -3,10 +3,11 @@ import expect = require("expect.js");
 import {ClusteredReadModelRetriever} from "../scripts/ClusteredReadModels";
 import {IMock, Mock, Times, It} from "typemoq";
 import ICluster from "../scripts/ICluster";
-import {IProjectionRunner, IReadModelNotifier, SpecialEvents} from "prettygoat";
+import {IProjectionRunner, IReadModelNotifier, SpecialEvents, ProjectionStats} from "prettygoat";
 import {Observable} from "rxjs";
 import MockRequest from "./fixtures/MockRequest";
 import MockResponse from "./fixtures/MockResponse";
+import {async} from "../../prettygoat/node_modules/rxjs/scheduler/async";
 
 describe("Given a clustered readmodel retriever", () => {
 
@@ -26,24 +27,6 @@ describe("Given a clustered readmodel retriever", () => {
     });
 
     context("when requesting a readmodel state", () => {
-        context("when it's already been retrieved", () => {
-            beforeEach(async () => {
-                cluster.setup(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny())).returns(() => true);
-                readmodelNotifier.setup(r => r.changes("readmodel")).returns(() => Observable.of({
-                    type: SpecialEvents.READMODEL_CHANGED,
-                    payload: "readmodel",
-                    timestamp: new Date(6000)
-                }));
-                await subject.modelFor("readmodel");
-            });
-            it("should pick it from cache", async () => {
-                let readmodel = await subject.modelFor("readmodel");
-
-                expect(readmodel).to.eql({count: 20});
-                cluster.verify(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny()), Times.once());
-            });
-        });
-
         context("when it's not retrieved yet", () => {
             beforeEach(() => {
                 readmodelNotifier.setup(r => r.changes("readmodel")).returns(() => Observable.of({
@@ -69,16 +52,18 @@ describe("Given a clustered readmodel retriever", () => {
                     cluster.setup(c => c.requests()).returns(() => Observable.create(observer => {
                         observer.next([new MockRequest("/api"), new MockResponse()]);
                         observer.next([new MockRequest("pgoat://readmodel/payload", {
-                            readmodel: "readmodel2",
+                            type: "readmodel2",
                             payload: {
                                 count: 40
-                            }
+                            },
+                            timestamp: new Date(4000)
                         }), new MockResponse()]);
                         observer.next([new MockRequest("pgoat://readmodel/payload", {
-                            readmodel: "readmodel",
+                            type: "readmodel",
                             payload: {
                                 count: 20
-                            }
+                            },
+                            timestamp: new Date(6000)
                         }), new MockResponse()]);
                     }));
                 });
@@ -86,6 +71,14 @@ describe("Given a clustered readmodel retriever", () => {
                     let readmodel = await subject.modelFor("readmodel");
 
                     expect(readmodel).to.eql({count: 20});
+                });
+
+                it("should avoid duplicate requests to the same readmodel", async () => {
+                    let readmodel = await subject.modelFor("readmodel");
+                    readmodel = await subject.modelFor("readmodel");
+
+                    expect(readmodel).to.eql({count: 20});
+                    cluster.verify(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny()), Times.once());
                 });
             });
         });

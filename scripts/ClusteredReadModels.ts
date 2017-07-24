@@ -64,7 +64,16 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
 }
 
+type CachedReadModel<T = any> = {
+    timestamp: Date;
+    payload: T;
+}
+
 export class ClusteredReadModelRetriever implements IReadModelRetriever {
+
+    private changes: Dictionary<Observable<Event>> = {};
+    private latestTimestamp: Dictionary<Date> = {};
+    private cachedReadModels: Dictionary<CachedReadModel> = {};
 
     constructor(@inject("ICluster") private cluster: ICluster,
                 @inject("IProjectionRunnerHolder") private holder: Dictionary<IProjectionRunner>,
@@ -73,6 +82,13 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
     }
 
     modelFor<T>(name: string): Promise<T> {
+        this.subscribeToReadModelChanges(name);
+        let cachedReadModel = this.cachedReadModels[name],
+            latestTimestamp = this.latestTimestamp[name];
+
+        if (cachedReadModel && +cachedReadModel.timestamp === +latestTimestamp)
+            return Promise.resolve(cachedReadModel.payload);
+
         if (this.cluster.handleOrProxy(name, MessageBuilder.requestFor("readmodel/retrieve", {
                 readmodel: name
             }), MessageBuilder.emptyResponse())) {
@@ -81,11 +97,24 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
             return this.cluster.requests()
                 .filter(requestData => requestData[0].url === "pgoat://readmodel/payload")
                 .map(requestData => requestData[0].body)
-                .filter(body => body.readmodel === name)
-                .map(body => body.payload)
+                .filter(body => body.type === name)
                 .take(1)
+                .do(body => {
+                    this.cachedReadModels[name] = {
+                        timestamp: body.timestamp,
+                        payload: body.payload
+                    };
+                })
+                .map(body => body.payload)
                 .toPromise();
         }
     }
 
+    private subscribeToReadModelChanges(name: string) {
+        let source = this.changes[name];
+        if (!source) {
+            source = this.changes[name] = this.readModelNotifier.changes(name);
+            source.subscribe(change => this.latestTimestamp[name] = change.timestamp);
+        }
+    }
 }
