@@ -5,7 +5,7 @@ import Cluster from "./Cluster";
 import ClusteredSocketFactory from "./ClusteredSocketFactory";
 import ClusteredReplicationManager from "./ClusteredReplicationManager";
 import ProcessLogger from "./ProcessLogger";
-import ClusteredRequestAdapter from "./web/ClusteredRequestAdapter";
+import ClusteredRequestAdapter from "./ClusteredRequestAdapter";
 import {
     IProjectionEngine, ProjectionEngine,
     ILogger, ConsoleLogger,

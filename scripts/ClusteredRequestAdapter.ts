@@ -1,5 +1,5 @@
 import {inject} from "inversify";
-import ICluster from "../ICluster";
+import ICluster from "./ICluster";
 import {IRouteResolver, IRequest, IResponse, RequestAdapter} from "prettygoat";
 
 class ClusteredRequestAdapter extends RequestAdapter {
