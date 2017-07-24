@@ -6,13 +6,13 @@ import {
     IAsyncPublisher,
     IAsyncPublisherFactory,
     SpecialEvents,
-    Dictionary
+    Dictionary,
+    IProjectionRunner
 } from "prettygoat";
 import {Observable, Subject} from "rxjs";
 import {inject} from "inversify";
 import ICluster from "./ICluster";
 import {forEach, reduce, uniq, includes} from "lodash";
-import {IProjectionRunner} from "../../prettygoat/scripts/projections/IProjectionRunner";
 import RequestBuilder from "./web/RequestBuilder";
 
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
@@ -66,7 +66,9 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
 export class ClusteredReadModelRetriever implements IReadModelRetriever {
 
-    constructor() {
+    constructor(@inject("ICluster") private cluster: ICluster,
+                @inject("IProjectionRunnerHolder") private holder: Dictionary<IProjectionRunner>,
+                @inject("IReadModelNotifier") private readModelNotifier: IReadModelNotifier) {
 
     }
 
