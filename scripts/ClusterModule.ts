@@ -6,10 +6,9 @@ import ClusteredSocketFactory from "./ClusteredSocketFactory";
 import ClusteredReplicationManager from "./ClusteredReplicationManager";
 import ProcessLogger from "./ProcessLogger";
 import ClusteredRequestAdapter from "./web/ClusteredRequestAdapter";
-import ClusteredRouteResolver from "./web/ClusteredRouteResolver";
 import {
     IProjectionEngine, ProjectionEngine,
-    ILogger, ConsoleLogger, IRouteResolver, RouteResolver,
+    ILogger, ConsoleLogger,
     IProjectionRegistry, IServiceLocator, IModule
 } from "prettygoat";
 
@@ -24,8 +23,6 @@ class ClusterModule implements IModule {
         container.bind<ILogger>("Logger").to(ConsoleLogger).whenInjectedInto(ProcessLogger);
         container.rebind("ILogger").to(ProcessLogger).inSingletonScope();
         container.rebind("IRequestAdapter").to(ClusteredRequestAdapter).inSingletonScope();
-        container.rebind("IRouteResolver").to(ClusteredRouteResolver).inSingletonScope();
-        container.bind<IRouteResolver>("RouteResolver").to(RouteResolver).inSingletonScope().whenInjectedInto(ClusteredRouteResolver);
     };
 
     register(registry: IProjectionRegistry, serviceLocator?: IServiceLocator, overrides?: any): void {
