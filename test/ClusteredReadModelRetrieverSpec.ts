@@ -28,8 +28,7 @@ describe("Given a clustered readmodel retriever", () => {
     context("when requesting a readmodel state", () => {
         context("when it's already been retrieved", () => {
             beforeEach(async () => {
-                cluster.setup(c => c.whoami()).returns(() => "my-ip");
-                cluster.setup(c => c.lookup("readmodel")).returns(() => "my-ip");
+                cluster.setup(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny())).returns(() => true);
                 readmodelNotifier.setup(r => r.changes("readmodel")).returns(() => Observable.of({
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel",
@@ -41,7 +40,7 @@ describe("Given a clustered readmodel retriever", () => {
                 let readmodel = await subject.modelFor("readmodel");
 
                 expect(readmodel).to.eql({count: 20});
-                cluster.verify(c => c.lookup("readmodel"), Times.once());
+                cluster.verify(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny()), Times.once());
             });
         });
 
@@ -55,8 +54,7 @@ describe("Given a clustered readmodel retriever", () => {
             });
             context("when it's on the same node", () => {
                 beforeEach(() => {
-                    cluster.setup(c => c.whoami()).returns(() => "my-ip");
-                    cluster.setup(c => c.lookup("readmodel")).returns(() => "my-ip");
+                    cluster.setup(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny())).returns(() => true);
                 });
                 it("should pick the readmodel from memory", async () => {
                     let readmodel = await subject.modelFor("readmodel");
@@ -67,20 +65,27 @@ describe("Given a clustered readmodel retriever", () => {
 
             context("when it's on another node", () => {
                 beforeEach(() => {
-                    cluster.setup(c => c.whoami()).returns(() => "my-ip");
-                    cluster.setup(c => c.lookup("readmodel")).returns(() => "not-my-ip");
+                    cluster.setup(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny())).returns(() => false);
                     cluster.setup(c => c.requests()).returns(() => Observable.create(observer => {
                         observer.next([new MockRequest("/api"), new MockResponse()]);
-                        observer.next([new MockRequest(null, {
-                            count: 20
-                        }, "readmodel/state"), new MockResponse()]);
+                        observer.next([new MockRequest("pgoat://readmodel/payload", {
+                            readmodel: "readmodel2",
+                            payload: {
+                                count: 40
+                            }
+                        }), new MockResponse()]);
+                        observer.next([new MockRequest("pgoat://readmodel/payload", {
+                            readmodel: "readmodel",
+                            payload: {
+                                count: 20
+                            }
+                        }), new MockResponse()]);
                     }));
                 });
                 it("should retrieve it from another node", async () => {
                     let readmodel = await subject.modelFor("readmodel");
 
                     expect(readmodel).to.eql({count: 20});
-                    cluster.verify(c => c.handleOrProxy("readmodel", It.isAny(), It.isAny()), Times.once());
                 });
             });
         });

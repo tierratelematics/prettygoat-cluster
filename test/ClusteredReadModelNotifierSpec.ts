@@ -87,17 +87,17 @@ describe("Given a clustered readmodel notifier", () => {
     context("when the changes of a specific readmodel are requested", () => {
         beforeEach(() => {
             cluster.setup(c => c.requests()).returns(() => Observable.create(observer => {
-                observer.next([new MockRequest(null, {
+                observer.next([new MockRequest("pgoat://readmodel/change", {
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel1",
                     timestamp: new Date(6000)
-                }, "readmodel/change"), new MockResponse()]);
+                }), new MockResponse()]);
                 observer.next([new MockRequest("/api/stop"), new MockResponse()]);
-                observer.next([new MockRequest(null, {
+                observer.next([new MockRequest("pgoat://readmodel/change", {
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel2",
                     timestamp: new Date(7000)
-                }, "readmodel/change"), new MockResponse()]);
+                }), new MockResponse()]);
             }));
             cluster.setup(c => c.handleOrProxyToAll(It.isAny(), It.isAny())).returns(() => true);
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {

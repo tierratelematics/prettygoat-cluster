@@ -13,7 +13,7 @@ import {Observable, Subject} from "rxjs";
 import {inject} from "inversify";
 import ICluster from "./ICluster";
 import {forEach, reduce, uniq, includes} from "lodash";
-import RequestBuilder from "./web/RequestBuilder";
+import MessageBuilder from "./MessageBuilder";
 
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
@@ -29,7 +29,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
             let readmodel = change.payload,
                 dependents = this.dependents[change.payload] || this.dependentsFor(readmodel);
             this.dependents[readmodel] = dependents;
-            if (this.cluster.handleOrProxyToAll(dependents, RequestBuilder.buildChannelMessage("readmodel/change", change))) {
+            if (this.cluster.handleOrProxyToAll(dependents, MessageBuilder.requestFor("readmodel/change", change))) {
                 this.localChanges.next(change);
             }
         });
@@ -37,7 +37,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
     changes(name: string): Observable<Event> {
         return this.cluster.requests()
-            .filter(request => request[0].channel === "readmodel/change")
+            .filter(request => request[0].url === "pgoat://readmodel/change")
             .map(requestData => requestData[0].body)
             .filter(change => change.payload === name)
             .merge(this.localChanges);
@@ -73,7 +73,19 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
     }
 
     modelFor<T>(name: string): Promise<T> {
-        throw new Error("Method not implemented.");
+        if (this.cluster.handleOrProxy(name, MessageBuilder.requestFor("readmodel/retrieve", {
+                readmodel: name
+            }), MessageBuilder.emptyResponse())) {
+            return Promise.resolve(this.holder[name].state);
+        } else {
+            return this.cluster.requests()
+                .filter(requestData => requestData[0].url === "pgoat://readmodel/payload")
+                .map(requestData => requestData[0].body)
+                .filter(body => body.readmodel === name)
+                .map(body => body.payload)
+                .take(1)
+                .toPromise();
+        }
     }
 
 }
