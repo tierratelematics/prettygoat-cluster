@@ -27,7 +27,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
         this.publisher = asyncPublisherFactory.publisherFor<Event>(<IProjectionRunner>{stats: {realtime: true}});
         this.publisher.items(item => item.payload).subscribe(change => {
             let readmodel = change.payload,
-                dependents = this.dependents[change.payload] || this.dependentsFor(readmodel);
+                dependents = this.dependents[change.payload] || this.dependantsFor(readmodel);
             this.dependents[readmodel] = dependents;
             if (this.cluster.handleOrProxyToAll(dependents, MessageBuilder.requestFor("readmodel/change", change))) {
                 this.localChanges.next(change);
@@ -51,7 +51,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
         });
     }
 
-    private dependentsFor(readmodel: string): string[] {
+    private dependantsFor(readmodel: string): string[] {
         return uniq(reduce(this.registry.projections(), (result, entry) => {
             let publishPoints = entry[1].publish;
             forEach(publishPoints, point => {

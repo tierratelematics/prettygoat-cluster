@@ -7,7 +7,6 @@ import {IProjectionRunner, IReadModelNotifier, SpecialEvents, ProjectionStats} f
 import {Observable} from "rxjs";
 import MockRequest from "./fixtures/MockRequest";
 import MockResponse from "./fixtures/MockResponse";
-import {async} from "../../prettygoat/node_modules/rxjs/scheduler/async";
 
 describe("Given a clustered readmodel retriever", () => {
 
