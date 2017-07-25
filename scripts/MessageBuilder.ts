@@ -1,5 +1,5 @@
-import {IncomingMessage, ServerResponse} from "http";
-const {Request, Response} = require("hammock");
+import {IncomingMessage} from "http";
+const {Request} = require("hammock");
 
 class MessageBuilder {
 
@@ -7,10 +7,6 @@ class MessageBuilder {
         let request = new Request({url: `pgoat://${channel}`});
         request.end(JSON.stringify(payload));
         return request;
-    }
-
-    static emptyResponse(): ServerResponse {
-        return new Response();
     }
 }
 

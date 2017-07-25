@@ -29,9 +29,13 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
             let readmodel = change.payload,
                 dependents = this.dependents[change.payload] || this.dependantsFor(readmodel);
             this.dependents[readmodel] = dependents;
-            if (this.cluster.handleOrProxyToAll(dependents, MessageBuilder.requestFor("readmodel/change", change))) {
-                this.localChanges.next(change);
-            }
+            forEach(dependents, dependent => {
+                if (this.cluster.whoami() === this.cluster.lookup(dependent)) {
+                    this.localChanges.next(change);
+                } else {
+                    this.cluster.send(dependent, MessageBuilder.requestFor("readmodel/change", change));
+                }
+            });
         });
     }
 
@@ -81,7 +85,7 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
 
     }
 
-    modelFor<T>(name: string): Promise<T> {
+    async modelFor<T>(name: string): Promise<T> {
         this.subscribeToReadModelChanges(name);
         let cachedReadModel = this.readModelsCache[name],
             latestTimestamp = this.latestTimestamps[name];
@@ -89,24 +93,17 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         if (cachedReadModel && +cachedReadModel.timestamp === +latestTimestamp)
             return Promise.resolve(cachedReadModel.payload);
 
-        if (this.cluster.handleOrProxy(name, MessageBuilder.requestFor("readmodel/retrieve", {
-                readmodel: name
-            }), MessageBuilder.emptyResponse())) {
-            return Promise.resolve(this.holder[name].state);
+        if (this.cluster.lookup(name) === this.cluster.whoami()) {
+            return this.holder[name].state;
         } else {
-            return this.cluster.requests()
-                .filter(requestData => requestData[0].url === "pgoat://readmodel/payload")
-                .map(requestData => requestData[0].body)
-                .filter(body => body.type === name)
-                .take(1)
-                .do(body => {
-                    this.readModelsCache[name] = {
-                        timestamp: body.timestamp,
-                        payload: body.payload
-                    };
-                })
-                .map(body => body.payload)
-                .toPromise();
+            let readmodel = await this.cluster.send<Event>(name, MessageBuilder.requestFor("readmodel/retrieve", {
+                readmodel: name
+            }));
+            this.readModelsCache[name] = {
+                timestamp: readmodel.timestamp,
+                payload: readmodel.payload
+            };
+            return readmodel.payload;
         }
     }
 

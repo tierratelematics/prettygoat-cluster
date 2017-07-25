@@ -6,6 +6,7 @@ import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
 import {forEach} from "lodash";
+
 const Ringpop = require("ringpop");
 const TChannel = require("tchannel");
 
@@ -35,7 +36,7 @@ class Cluster implements ICluster {
                     }
                 });
                 this.ringpop = new Ringpop({
-                    app: "ringpop",
+                    app: "prettygoat-cluster",
                     hostPort: `${this.clusterConfig.host}:${port}`,
                     logger: {
                         trace: this.logger.debug.bind(this.logger),
@@ -87,20 +88,16 @@ class Cluster implements ICluster {
         return this.ringpop.handleOrProxy(key, request, response);
     }
 
-    handleOrProxyToAll(keys: string[], request: IncomingMessage): boolean {
-        let handleOnNode = false;
-        forEach(keys, key => {
-            if (this.lookup(key) === this.whoami()) {
-                handleOnNode = true;
-            } else {
-                this.ringpop.handleOrProxyAll({
-                    keys: [key],
-                    req: request
-                });
-            }
+    send<T>(key: string, request: IncomingMessage): Promise<T> {
+        return new Promise((resolve, reject) => {
+            this.ringpop.handleOrProxyAll({
+                keys: [key],
+                req: request
+            }, (error, responses) => {
+                if (error) return reject(error);
+                else resolve(JSON.parse(responses[0].body));
+            });
         });
-
-        return handleOnNode;
     }
 
     requests(): Observable<RequestData> {

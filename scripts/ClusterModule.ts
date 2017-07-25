@@ -9,8 +9,10 @@ import ClusteredRequestAdapter from "./ClusteredRequestAdapter";
 import {
     IProjectionEngine, ProjectionEngine,
     ILogger, ConsoleLogger,
-    IProjectionRegistry, IServiceLocator, IModule
+    IProjectionRegistry, IServiceLocator, IModule, IRequestHandler
 } from "prettygoat";
+import {ClusteredReadModelNotifier, ClusteredReadModelRetriever} from "./ClusteredReadModels";
+import ReadModelRequestHandler from "./ReadModelRequestHandler";
 
 class ClusterModule implements IModule {
 
@@ -23,6 +25,9 @@ class ClusterModule implements IModule {
         container.bind<ILogger>("Logger").to(ConsoleLogger).whenInjectedInto(ProcessLogger);
         container.rebind("ILogger").to(ProcessLogger).inSingletonScope();
         container.rebind("IRequestAdapter").to(ClusteredRequestAdapter).inSingletonScope();
+        container.rebind("IReadModelRetriever").to(ClusteredReadModelRetriever).inSingletonScope();
+        container.rebind("IReadModelNotifier").to(ClusteredReadModelNotifier).inSingletonScope();
+        container.bind<IRequestHandler>("IRequestHandler").to(ReadModelRequestHandler).inSingletonScope();
     };
 
     register(registry: IProjectionRegistry, serviceLocator?: IServiceLocator, overrides?: any): void {

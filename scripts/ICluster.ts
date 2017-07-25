@@ -7,7 +7,7 @@ interface ICluster {
     whoami(): string;
     lookup(key: string): string;
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
-    handleOrProxyToAll(keys: string[], request: IncomingMessage): boolean;
+    send<T>(key: string, request: IncomingMessage): Promise<T>;
     requests(): Observable<RequestData>;
     changes(): Observable<void>;
 }
