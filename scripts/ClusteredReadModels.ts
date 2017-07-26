@@ -10,11 +10,12 @@ import {
     IProjectionRunner
 } from "prettygoat";
 import {Observable, Subject} from "rxjs";
-import {inject} from "inversify";
+import {inject, injectable} from "inversify";
 import ICluster from "./ICluster";
 import {forEach, reduce, uniq, includes} from "lodash";
 import MessageBuilder from "./MessageBuilder";
 
+@injectable()
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
     private publisher: IAsyncPublisher<Event>;
@@ -73,6 +74,7 @@ type CachedReadModel<T = any> = {
     payload: T;
 }
 
+@injectable()
 export class ClusteredReadModelRetriever implements IReadModelRetriever {
 
     private readModelsChanges: Dictionary<Observable<Event>> = {};

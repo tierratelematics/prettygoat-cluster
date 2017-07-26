@@ -94,8 +94,13 @@ class Cluster implements ICluster {
                 keys: [key],
                 req: request
             }, (error, responses) => {
-                if (error) return reject(error);
-                else resolve(JSON.parse(responses[0].body));
+                if (error) {
+                    reject(error);
+                } else {
+                    let body = responses[0].res.body;
+                    let stringBody = Buffer.isBuffer(body) ? body.toString("utf8") : body;
+                    resolve(JSON.parse(stringBody));
+                }
             });
         });
     }
