@@ -13,7 +13,6 @@ import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
 import ICluster from "./ICluster";
 import {forEach, reduce, uniq, includes} from "lodash";
-import MessageBuilder from "./MessageBuilder";
 
 @injectable()
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
@@ -34,7 +33,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
                 if (this.cluster.whoami() === this.cluster.lookup(dependent)) {
                     this.localChanges.next(change);
                 } else {
-                    this.cluster.send(dependent, MessageBuilder.requestFor("readmodel/change", change));
+                    this.cluster.send(dependent, {channel: "readmodel/change", payload: change});
                 }
             });
         });
@@ -98,9 +97,12 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         if (this.cluster.lookup(name) === this.cluster.whoami()) {
             return this.holder[name].state;
         } else {
-            let readmodel = await this.cluster.send<Event>(name, MessageBuilder.requestFor("readmodel/retrieve", {
-                readmodel: name
-            }));
+            let readmodel = await this.cluster.send<Event>(name, {
+                channel: "readmodel/retrieve",
+                payload: {
+                    readmodel: name
+                }
+            });
             this.readModelsCache[name] = {
                 timestamp: readmodel.timestamp,
                 payload: readmodel.payload

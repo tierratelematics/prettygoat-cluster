@@ -5,7 +5,8 @@ import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
-import {forEach} from "lodash";
+import {ClusterMessage} from "./ClusterMessage";
+const {Request} = require("hammock");
 
 const Ringpop = require("ringpop");
 const TChannel = require("tchannel");
@@ -88,8 +89,10 @@ class Cluster implements ICluster {
         return this.ringpop.handleOrProxy(key, request, response);
     }
 
-    send<T>(key: string, request: IncomingMessage): Promise<T> {
+    send<T>(key: string, message: ClusterMessage): Promise<T> {
         return new Promise((resolve, reject) => {
+            let request = new Request({url: `pgoat://${message.channel}`});
+            request.end(JSON.stringify(message.payload));
             this.ringpop.handleOrProxyAll({
                 keys: [key],
                 req: request
