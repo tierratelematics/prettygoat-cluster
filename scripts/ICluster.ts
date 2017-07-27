@@ -1,13 +1,13 @@
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import {IncomingMessage, ServerResponse} from "http";
 import {RequestData} from "prettygoat";
+import {ClusterMessage} from "./ClusterMessage";
 
 interface ICluster {
     startup(): Observable<void>;
-    whoami(): string;
-    lookup(key: string): string;
+    canHandle(key: string): boolean;
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
-    handleOrProxyToAll(keys: string[], request: IncomingMessage);
+    send<T>(key: string, message: ClusterMessage): Promise<T>;
     requests(): Observable<RequestData>;
     changes(): Observable<void>;
 }
