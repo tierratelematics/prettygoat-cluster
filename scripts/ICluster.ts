@@ -5,8 +5,7 @@ import {ClusterMessage} from "./ClusterMessage";
 
 interface ICluster {
     startup(): Observable<void>;
-    whoami(): string;
-    lookup(key: string): string;
+    canHandle(key: string): boolean;
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
     send<T>(key: string, message: ClusterMessage): Promise<T>;
     requests(): Observable<RequestData>;

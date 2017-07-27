@@ -35,15 +35,14 @@ describe("Given a set of projections to redistribute", () => {
             ["Admin", projection1], ["Admin", projection2]
         ]);
         cluster = Mock.ofType<ICluster>();
-        cluster.setup(c => c.whoami()).returns(() => "my-ip");
         engine = Mock.ofType<IProjectionEngine>();
         subject = new ClusteredProjectionEngine(engine.object, registry.object, holder, cluster.object, NullLogger);
     });
 
     context("when a projection is assigned to a node", () => {
         beforeEach(() => {
-            cluster.setup(c => c.lookup("projection1")).returns(() => "not-my-ip");
-            cluster.setup(c => c.lookup("projection2")).returns(() => "my-ip");
+            cluster.setup(c => c.canHandle("projection1")).returns(() => false);
+            cluster.setup(c => c.canHandle("projection2")).returns(() => true);
         });
         context("and it was already running", () => {
             beforeEach(() => {
@@ -67,8 +66,8 @@ describe("Given a set of projections to redistribute", () => {
 
     context("when a projection is not assigned anymore to a certain node", () => {
         beforeEach(() => {
-            cluster.setup(c => c.lookup("projection1")).returns(() => "not-my-ip");
-            cluster.setup(c => c.lookup("projection2")).returns(() => "my-ip");
+            cluster.setup(c => c.canHandle("projection1")).returns(() => false);
+            cluster.setup(c => c.canHandle("projection2")).returns(() => true);
             runner1.object.stats.running = true;
             subject.run();
         });

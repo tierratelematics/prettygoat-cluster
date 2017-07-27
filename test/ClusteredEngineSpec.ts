@@ -1,5 +1,4 @@
 import "reflect-metadata";
-import expect = require("expect.js");
 import {IMock, Mock, Times, It} from "typemoq";
 import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
 import {
@@ -27,14 +26,13 @@ describe("Given a set of nodes", () => {
             ["Admin", projection1], ["Admin", projection2]
         ]);
         cluster = Mock.ofType<ICluster>();
-        cluster.setup(c => c.whoami()).returns(() => "my-ip");
         engine = Mock.ofType<IProjectionEngine>();
         subject = new ClusteredProjectionEngine(engine.object, registry.object, {}, cluster.object, NullLogger);
     });
     context("when the cluster starts", () => {
         beforeEach(() => {
-            cluster.setup(c => c.lookup("projection1")).returns(() => "not-my-ip");
-            cluster.setup(c => c.lookup("projection2")).returns(() => "my-ip");
+            cluster.setup(c => c.canHandle("projection1")).returns(() => false);
+            cluster.setup(c => c.canHandle("projection2")).returns(() => true);
         });
         it("should run the projections that match", () => {
             subject.run();

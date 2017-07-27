@@ -77,12 +77,8 @@ class Cluster implements ICluster {
         });
     }
 
-    whoami(): string {
-        return this.ringpop.whoami();
-    }
-
-    lookup(key: string): string {
-        return this.ringpop.lookup(key);
+    canHandle(key: string): boolean {
+        return this.ringpop.whoami() === this.ringpop.lookup(key);
     }
 
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean {

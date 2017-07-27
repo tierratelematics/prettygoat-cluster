@@ -30,7 +30,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
                 dependents = this.dependents[change.payload] || this.dependantsFor(readmodel);
             this.dependents[readmodel] = dependents;
             forEach(dependents, dependent => {
-                if (this.cluster.whoami() === this.cluster.lookup(dependent)) {
+                if (this.cluster.canHandle(dependent)) {
                     this.localChanges.next(change);
                 } else {
                     this.cluster.send(dependent, {channel: "readmodel/change", payload: change});
@@ -94,7 +94,7 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         if (cachedReadModel && +cachedReadModel.timestamp === +latestTimestamp)
             return Promise.resolve(cachedReadModel.payload);
 
-        if (this.cluster.lookup(name) === this.cluster.whoami()) {
+        if (this.cluster.canHandle(name)) {
             return this.holder[name].state;
         } else {
             let readmodel = await this.cluster.send<Event>(name, {

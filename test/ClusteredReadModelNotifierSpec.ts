@@ -46,8 +46,7 @@ describe("Given a clustered readmodel notifier", () => {
 
     context("when a new readmodel is processed", () => {
         beforeEach(() => {
-            cluster.setup(c => c.whoami()).returns(() => "my-ip");
-            cluster.setup(c => c.lookup("proj1")).returns(() => "not-my-ip");
+            cluster.setup(c => c.canHandle("proj1")).returns(() => false);
             asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
                 let publisher = Mock.ofType<IAsyncPublisher<any>>();
                 publisher.setup(p => p.items(It.is<any>(value => !!value))).returns(() => Observable.of({

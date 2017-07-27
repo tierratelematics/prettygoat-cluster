@@ -3,10 +3,8 @@ import expect = require("expect.js");
 import {ClusteredReadModelRetriever} from "../scripts/ClusteredReadModels";
 import {IMock, Mock, Times, It} from "typemoq";
 import ICluster from "../scripts/ICluster";
-import {IProjectionRunner, IReadModelNotifier, SpecialEvents, ProjectionStats} from "prettygoat";
+import {IProjectionRunner, IReadModelNotifier, SpecialEvents} from "prettygoat";
 import {Observable} from "rxjs";
-import MockRequest from "./fixtures/MockRequest";
-import MockResponse from "./fixtures/MockResponse";
 
 describe("Given a clustered readmodel retriever", () => {
 
@@ -22,7 +20,6 @@ describe("Given a clustered readmodel retriever", () => {
             return {count: 20};
         });
         readmodelNotifier = Mock.ofType<IReadModelNotifier>();
-        cluster.setup(c => c.whoami()).returns(() => "my-ip");
         subject = new ClusteredReadModelRetriever(cluster.object, {"readmodel": runner.object}, readmodelNotifier.object);
     });
 
@@ -37,7 +34,7 @@ describe("Given a clustered readmodel retriever", () => {
             });
             context("when it's on the same node", () => {
                 beforeEach(() => {
-                    cluster.setup(c => c.lookup("readmodel")).returns(() => "my-ip");
+                    cluster.setup(c => c.canHandle("readmodel")).returns(() => true);
                 });
                 it("should pick the readmodel from memory", async () => {
                     let readmodel = await subject.modelFor("readmodel");
@@ -48,7 +45,7 @@ describe("Given a clustered readmodel retriever", () => {
 
             context("when it's on another node", () => {
                 beforeEach(() => {
-                    cluster.setup(c => c.whoami()).returns(() => "not-my-ip");
+                    cluster.setup(c => c.canHandle("readmodel")).returns(() => false);
                     cluster.setup(c => c.send("readmodel", It.isValue({
                         channel: "readmodel/retrieve",
                         payload: {readmodel: "readmodel"}
@@ -71,7 +68,7 @@ describe("Given a clustered readmodel retriever", () => {
                     readmodel = await subject.modelFor("readmodel");
 
                     expect(readmodel).to.eql({count: 20});
-                    cluster.verify(c => c.lookup("readmodel"), Times.once());
+                    cluster.verify(c => c.canHandle("readmodel"), Times.once());
                 });
             });
         });

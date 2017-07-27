@@ -17,7 +17,7 @@ class ClusteredProjectionEngine implements IProjectionEngine {
 
     }
 
-    run(projection?: IProjection<any>, context?: PushContext) {
+    run(projection?: IProjection<any>) {
         if (projection) {
             this.engine.run(projection);
         } else {
@@ -25,7 +25,7 @@ class ClusteredProjectionEngine implements IProjectionEngine {
             forEach(projections, entry => {
                 let registeredProjection = entry[1],
                     runner = this.holder[registeredProjection.name];
-                if (this.cluster.lookup(registeredProjection.name) === this.cluster.whoami()) {
+                if (this.cluster.canHandle(registeredProjection.name)) {
                     if (!runner || (runner && !runner.stats.running)) {
                         this.run(registeredProjection);
                         this.logger.info(`Running projection ${registeredProjection.name}`);
