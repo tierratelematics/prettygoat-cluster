@@ -1,10 +1,13 @@
 import ICluster from "./ICluster";
 import {inject, injectable, optional} from "inversify";
-import {Observable} from "rx";
+import {Observable} from "rxjs";
 import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
+import {ClusterMessage} from "./ClusterMessage";
+const {Request} = require("hammock");
+
 const Ringpop = require("ringpop");
 const TChannel = require("tchannel");
 
@@ -21,7 +24,7 @@ class Cluster implements ICluster {
     }
 
     startup(): Observable<void> {
-        return Observable.create<void>(observer => {
+        return Observable.create(observer => {
             PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
                 let tchannel = new TChannel({
                     logger: {
@@ -34,7 +37,7 @@ class Cluster implements ICluster {
                     }
                 });
                 this.ringpop = new Ringpop({
-                    app: "ringpop",
+                    app: "prettygoat-cluster",
                     hostPort: `${this.clusterConfig.host}:${port}`,
                     logger: {
                         trace: this.logger.debug.bind(this.logger),
@@ -49,11 +52,11 @@ class Cluster implements ICluster {
                         trace: false
                     })
                 });
-                this.requestSource = Observable.create(observer => {
+                this.requestSource = Observable.create(requestObserver => {
                     this.ringpop.on("request", (request, response) => {
                         let requestData = this.requestParser.parse(request, response);
                         this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
-                            observer.onNext(data);
+                            requestObserver.next(data);
                         });
                     });
                 }).share();
@@ -62,34 +65,42 @@ class Cluster implements ICluster {
                     this.logger.info(`TChannel listening on ${port}`);
                     this.ringpop.bootstrap(this.clusterConfig.nodes, (error, nodes) => {
                         if (error) {
-                            observer.onError(error);
+                            observer.error(error);
                         } else {
                             this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
-                            observer.onNext(null);
+                            observer.next(null);
                         }
-                        observer.onCompleted();
+                        observer.complete();
                     });
                 });
             }).catch(error => this.logger.error(error));
         });
     }
 
-    whoami(): string {
-        return this.ringpop.whoami();
-    }
-
-    lookup(key: string): string {
-        return this.ringpop.lookup(key);
+    canHandle(key: string): boolean {
+        return this.ringpop.whoami() === this.ringpop.lookup(key);
     }
 
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean {
         return this.ringpop.handleOrProxy(key, request, response);
     }
 
-    handleOrProxyToAll(keys: string[], request: IncomingMessage) {
-        this.ringpop.handleOrProxyAll({
-            keys: keys,
-            req: request
+    send<T>(key: string, message: ClusterMessage): Promise<T> {
+        return new Promise((resolve, reject) => {
+            let request = new Request({url: `pgoat://${message.channel}`});
+            request.end(JSON.stringify(message.payload));
+            this.ringpop.handleOrProxyAll({
+                keys: [key],
+                req: request
+            }, (error, responses) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    let body = responses[0].res.body;
+                    let stringBody = Buffer.isBuffer(body) ? body.toString("utf8") : body;
+                    resolve(JSON.parse(stringBody));
+                }
+            });
         });
     }
 

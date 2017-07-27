@@ -1,6 +1,5 @@
-import {IProjection, Projection, IProjectionDefinition} from "prettygoat";
+import {IProjection, IProjectionDefinition} from "prettygoat";
 
-@Projection("Dynamic")
 class DynamicNameProjection implements IProjectionDefinition<any> {
 
     constructor(private name: string) {
@@ -10,8 +9,9 @@ class DynamicNameProjection implements IProjectionDefinition<any> {
     define(): IProjection<any> {
         return {
             name: this.name,
-            definition: {}
-        }
+            definition: {},
+            publish: {}
+        };
     }
 
 }

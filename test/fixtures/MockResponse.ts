@@ -18,4 +18,3 @@ export default class MockResponse implements IResponse {
     }
 
 }
-

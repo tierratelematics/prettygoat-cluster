@@ -19,13 +19,13 @@
     "lodash": "~4.13.1",
     "reflect-metadata": "0.1.8",
     "ringpop": "~10.18.0",
-    "rx": "~4.1.0",
+    "rxjs": "~5.4.2",
     "socket.io": "~1.4.6",
     "socket.io-redis": "~3.1.0",
     "tchannel": "~3.9.0"
   },
   "peerDependencies": {
-    "prettygoat": "^3.6.0"
+    "prettygoat": "^4.0.0-0"
   },
   "main": "dist/prettygoat-cluster.js",
   "typings": "declarations/prettygoat-cluster.d.ts"

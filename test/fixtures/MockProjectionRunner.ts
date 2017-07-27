@@ -1,20 +1,18 @@
-import {Subject, IObserver} from "rx";
-import {IProjectionRunner, ProjectionStats, Snapshot, Dictionary, Event} from "prettygoat";
+import {IProjectionRunner, ProjectionStats, Snapshot} from "prettygoat";
 
 class MockProjectionRunner<T> implements IProjectionRunner<T> {
+    closed = false;
     state: T;
     stats = new ProjectionStats();
-    private subject: Subject<Event>;
 
-    constructor(data?: Subject<Event>) {
-        this.subject = data;
+    constructor() {
     }
 
     notifications() {
-        return this.subject;
+        return null;
     }
 
-    run(snapshot?: Snapshot<T|Dictionary<T>>): void {
+    run(snapshot?: Snapshot<T>): void {
 
     }
 
@@ -27,15 +25,10 @@ class MockProjectionRunner<T> implements IProjectionRunner<T> {
     resume(): void {
     }
 
-    dispose(): void {
+    unsubscribe(): void {
 
     }
 
 }
-
-function isObserver<T>(observerOrOnNext: (IObserver<Event>) | ((value: Event) => void)): observerOrOnNext is IObserver<Event> {
-    return (<IObserver<Event>>observerOrOnNext).onNext !== undefined;
-}
-
 
 export default MockProjectionRunner
