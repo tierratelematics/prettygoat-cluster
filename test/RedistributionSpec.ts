@@ -3,12 +3,11 @@ import expect = require("expect.js");
 import {IMock, Mock, Times, It} from "typemoq";
 import {has} from "lodash";
 import {
-    IProjectionEngine, IProjectionRegistry, IProjection, Dictionary, NullLogger, IProjectionRunner
+    IProjectionEngine, IProjectionRegistry, IProjection, Dictionary, NullLogger, IProjectionRunner, ProjectionStats
 } from "prettygoat";
 import ICluster from "../scripts/ICluster";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
-import MockProjectionRunner from "./fixtures/MockProjectionRunner";
 
 describe("Given a set of projections to redistribute", () => {
     let subject: IProjectionEngine,
@@ -24,8 +23,8 @@ describe("Given a set of projections to redistribute", () => {
     beforeEach(() => {
         projection1 = new DynamicNameProjection("projection1").define();
         projection2 = new DynamicNameProjection("projection2").define();
-        runner1 = Mock.ofType(MockProjectionRunner);
-        runner2 = Mock.ofType(MockProjectionRunner);
+        runner1 = Mock.ofType<IProjectionRunner>();
+        runner2 = Mock.ofType<IProjectionRunner>();
         holder = {
             projection1: runner1.object,
             projection2: runner2.object
@@ -46,7 +45,9 @@ describe("Given a set of projections to redistribute", () => {
         });
         context("and it was already running", () => {
             beforeEach(() => {
-                holder["projection2"].stats.running = true;
+                runner2.setup(r => r.stats).returns(() => {
+                    return <ProjectionStats>{running: true};
+                });
             });
             it("should keep it like that", () => {
                 subject.run();
@@ -68,7 +69,9 @@ describe("Given a set of projections to redistribute", () => {
         beforeEach(() => {
             cluster.setup(c => c.canHandle("projection1")).returns(() => false);
             cluster.setup(c => c.canHandle("projection2")).returns(() => true);
-            runner1.object.stats.running = true;
+            runner1.setup(r => r.stats).returns(() => {
+                return <ProjectionStats>{running: true};
+            });
             subject.run();
         });
         it("should be shut down", () => {
