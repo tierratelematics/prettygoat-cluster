@@ -24,17 +24,19 @@ class ClusteredHealthCheck implements IRequestHandler {
     constructor(@inject("ICluster") private cluster: ICluster,
                 @inject("IProjectionRegistry") private registry: IProjectionRegistry,
                 @inject("IClusterConfig") private clusterConfig: IClusterConfig) {
-        this.status.members = this.clusterConfig.nodes;
-        this.status.projections = this.runningProjections();
     }
 
     handle(request: IRequest, response: IResponse) {
-        if (!this.subscription) this.subscribeToClusterChanges();
+        if (!this.subscription) {
+            this.status.members = this.clusterConfig.nodes;
+            this.status.projections = this.runningProjections();
+            this.subscribeToClusterChanges();
+        }
         response.send(this.status);
     }
 
     private subscribeToClusterChanges() {
-        this.cluster.changes().subscribe(change => {
+        this.subscription = this.cluster.changes().subscribe(change => {
             this.status.members = difference(this.status.members, change.removed);
             this.status.unreachables = concat(this.status.unreachables, change.removed);
             this.status.members = concat(this.status.members, change.added);

@@ -126,8 +126,8 @@ export class Cluster implements ICluster {
         return this.requestSource;
     }
 
-    changes(): Observable<void> {
-        return Observable.fromEvent<void>(this.ringpop, "ringChanged");
+    changes(): Observable<ClusterChange> {
+        return Observable.fromEvent<ClusterChange>(this.ringpop, "ringChanged");
     }
 
 }
