@@ -16,7 +16,17 @@ export interface ICluster {
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
     send<T>(key: string, message: ClusterMessage): Promise<T>;
     requests(): Observable<RequestData>;
-    changes(): Observable<void>;
+    changes(): Observable<ClusterChange>;
+}
+
+export type ClusterMessage = {
+    channel: string;
+    payload: object
+}
+
+export type ClusterChange = {
+    added: string[];
+    removed: string[];
 }
 
 @injectable()
@@ -117,15 +127,7 @@ export class Cluster implements ICluster {
     }
 
     changes(): Observable<void> {
-        return Observable.fromEvent<void>(this.ringpop, "ringChanged").do(changes => {
-
-        });
+        return Observable.fromEvent<void>(this.ringpop, "ringChanged");
     }
 
 }
-
-export type ClusterMessage = {
-    channel: string;
-    payload: object
-}
-
