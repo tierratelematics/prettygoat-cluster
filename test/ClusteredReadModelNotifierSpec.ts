@@ -3,10 +3,10 @@ import expect = require("expect.js");
 import {ClusteredReadModelNotifier} from "../scripts/ClusteredReadModels";
 import {IProjectionRegistry, IProjection, IAsyncPublisherFactory, IAsyncPublisher, SpecialEvents} from "prettygoat";
 import {IMock, Mock, Times, It} from "typemoq";
-import ICluster from "../scripts/ICluster";
 import {Observable} from "rxjs";
 import MockRequest from "./fixtures/MockRequest";
 import MockResponse from "./fixtures/MockResponse";
+import {ICluster} from "../scripts/Cluster";
 
 describe("Given a clustered readmodel notifier", () => {
 

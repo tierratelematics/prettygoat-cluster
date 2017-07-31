@@ -1,18 +1,26 @@
-import ICluster from "./ICluster";
 import {inject, injectable, optional} from "inversify";
 import {Observable} from "rxjs";
 import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
-import {ClusterMessage} from "./ClusterMessage";
+
 const {Request} = require("hammock");
 
 const Ringpop = require("ringpop");
 const TChannel = require("tchannel");
 
+export interface ICluster {
+    startup(): Observable<void>;
+    canHandle(key: string): boolean;
+    handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
+    send<T>(key: string, message: ClusterMessage): Promise<T>;
+    requests(): Observable<RequestData>;
+    changes(): Observable<void>;
+}
+
 @injectable()
-class Cluster implements ICluster {
+export class Cluster implements ICluster {
     ringpop: any;
     requestSource: Observable<RequestData>;
 
@@ -109,9 +117,15 @@ class Cluster implements ICluster {
     }
 
     changes(): Observable<void> {
-        return Observable.fromEvent<void>(this.ringpop, "ringChanged");
+        return Observable.fromEvent<void>(this.ringpop, "ringChanged").do(changes => {
+
+        });
     }
 
 }
 
-export default Cluster
+export type ClusterMessage = {
+    channel: string;
+    payload: object
+}
+

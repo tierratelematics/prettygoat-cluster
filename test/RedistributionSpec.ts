@@ -5,9 +5,9 @@ import {has} from "lodash";
 import {
     IProjectionEngine, IProjectionRegistry, IProjection, Dictionary, NullLogger, IProjectionRunner, ProjectionStats
 } from "prettygoat";
-import ICluster from "../scripts/ICluster";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
+import {ICluster} from "../scripts/Cluster";
 
 describe("Given a set of projections to redistribute", () => {
     let subject: IProjectionEngine,

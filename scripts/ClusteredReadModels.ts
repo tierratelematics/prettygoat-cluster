@@ -11,8 +11,8 @@ import {
 } from "prettygoat";
 import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
-import ICluster from "./ICluster";
 import {forEach, reduce, uniq, includes} from "lodash";
+import {ICluster} from "./Cluster";
 
 @injectable()
 export class ClusteredReadModelNotifier implements IReadModelNotifier {

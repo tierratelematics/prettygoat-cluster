@@ -1,10 +1,10 @@
 import {inject, injectable} from "inversify";
 import {forEach} from "lodash";
-import ICluster from "./ICluster";
 import {
-    ILogger, IProjectionEngine, PushContext, IProjection,
+    ILogger, IProjectionEngine, IProjection,
     IProjectionRegistry, Dictionary, IProjectionRunner
 } from "prettygoat";
+import {ICluster} from "./Cluster";
 
 @injectable()
 class ClusteredProjectionEngine implements IProjectionEngine {

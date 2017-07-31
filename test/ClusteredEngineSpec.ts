@@ -7,8 +7,8 @@ import {
     IProjection,
     NullLogger
 } from "prettygoat";
-import ICluster from "../scripts/ICluster";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
+import {ICluster} from "../scripts/Cluster";
 
 describe("Given a set of nodes", () => {
     let subject: IProjectionEngine,
