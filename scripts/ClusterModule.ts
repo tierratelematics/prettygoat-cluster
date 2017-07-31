@@ -1,7 +1,5 @@
 import {interfaces} from "inversify";
 import ClusteredProjectionEngine from "./ClusteredProjectionEngine";
-import ICluster from "./ICluster";
-import Cluster from "./Cluster";
 import ClusteredSocketFactory from "./ClusteredSocketFactory";
 import ClusteredReplicationManager from "./ClusteredReplicationManager";
 import ProcessLogger from "./ProcessLogger";
@@ -13,6 +11,8 @@ import {
 } from "prettygoat";
 import {ClusteredReadModelNotifier, ClusteredReadModelRetriever} from "./ClusteredReadModels";
 import ReadModelRequestHandler from "./ReadModelRequestHandler";
+import ClusteredHealthCheck from "./ClusteredHealthCheck";
+import {Cluster, ICluster} from "./Cluster";
 
 class ClusterModule implements IModule {
 
@@ -28,6 +28,7 @@ class ClusterModule implements IModule {
         container.rebind("IReadModelRetriever").to(ClusteredReadModelRetriever).inSingletonScope();
         container.rebind("IReadModelNotifier").to(ClusteredReadModelNotifier).inSingletonScope();
         container.bind<IRequestHandler>("IRequestHandler").to(ReadModelRequestHandler).inSingletonScope();
+        container.bind<IRequestHandler>("IRequestHandler").to(ClusteredHealthCheck).inSingletonScope();
     };
 
     register(registry: IProjectionRegistry, serviceLocator?: IServiceLocator, overrides?: any): void {

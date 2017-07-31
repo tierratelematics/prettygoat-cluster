@@ -1,6 +1,6 @@
 import ClusterModule from "./ClusterModule";
-import ICluster from "./ICluster";
 import {IReplicationManager, IProjectionEngine, IRequestAdapter, Engine, ILogger} from "prettygoat";
+import {ICluster} from "./Cluster";
 
 class ClusteredEngine extends Engine {
 

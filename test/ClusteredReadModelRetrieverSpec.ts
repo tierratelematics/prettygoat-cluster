@@ -2,9 +2,9 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import {ClusteredReadModelRetriever} from "../scripts/ClusteredReadModels";
 import {IMock, Mock, Times, It} from "typemoq";
-import ICluster from "../scripts/ICluster";
 import {IProjectionRunner, IReadModelNotifier, SpecialEvents} from "prettygoat";
 import {Observable} from "rxjs";
+import {ICluster} from "../scripts/Cluster";
 
 describe("Given a clustered readmodel retriever", () => {
 

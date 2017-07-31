@@ -1,3 +1,7 @@
+# 2.0.0
+
+Bump to prettygoat 4.0
+
 # 1.0.0-7
 
 Enhance logging
