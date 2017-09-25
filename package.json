@@ -1,6 +1,6 @@
 {
   "name": "prettygoat-cluster",
-  "version": "2.0.0-2",
+  "version": "2.0.0",
   "dependencies": {
     "hammock": "~2.0.1",
     "inversify": "~3.1.0",
@@ -25,7 +25,7 @@
     "typemoq": "~1.2.1"
   },
   "peerDependencies": {
-    "prettygoat": "^4.0.0-0"
+    "prettygoat": "^4.0.0"
   },
   "main": "dist/prettygoat-cluster.js",
   "typings": "declarations/prettygoat-cluster.d.ts"
