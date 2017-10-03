@@ -47,11 +47,12 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
             .merge(this.localChanges);
     }
 
-    notifyChanged(name: string, timestamp: Date) {
+    notifyChanged(name: string, timestamp: Date, eventId?: string) {
         this.publisher.publish({
             type: SpecialEvents.READMODEL_CHANGED,
             payload: name,
-            timestamp: timestamp
+            timestamp: timestamp,
+            id: eventId
         });
     }
 
