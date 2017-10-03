@@ -27,6 +27,6 @@
   "peerDependencies": {
     "prettygoat": "^4.0.0"
   },
-  "main": "dist/prettygoat-cluster.js",
-  "typings": "declarations/prettygoat-cluster.d.ts"
+  "main": "dist",
+  "typings": "dist"
 }
