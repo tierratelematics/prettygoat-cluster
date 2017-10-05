@@ -87,7 +87,20 @@ describe("Given a clustered readmodel notifier", () => {
             publisher.verify(p => p.publish(It.isValue({
                 type: SpecialEvents.READMODEL_CHANGED,
                 payload: "readmodel1",
-                timestamp: new Date(6000)
+                timestamp: new Date(6000),
+                id: undefined
+            })), Times.once());
+        });
+
+        it("should publish the event id", () => {
+            subject = new ClusteredReadModelNotifier(registry.object, cluster.object, asyncPublisherFactory.object);
+            subject.notifyChanged("readmodel1", new Date(6000), "uniq-id-1");
+
+            publisher.verify(p => p.publish(It.isValue({
+                type: SpecialEvents.READMODEL_CHANGED,
+                payload: "readmodel1",
+                timestamp: new Date(6000),
+                id: "uniq-id-1"
             })), Times.once());
         });
     });
