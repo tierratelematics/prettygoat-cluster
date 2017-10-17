@@ -18,7 +18,7 @@ class ClusteredEngine extends Engine {
         let projectionEngine = this.container.get<IProjectionEngine>("IProjectionEngine"),
             cluster = this.container.get<ICluster>("ICluster"),
             requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
-            logger = this.container.get<ILogger>("ILogger");
+            logger = this.container.get<ILogger>("ILogger").createChildLogger("ClusteredEngine");
 
         cluster.startup().subscribe(() => {
             projectionEngine.run();
