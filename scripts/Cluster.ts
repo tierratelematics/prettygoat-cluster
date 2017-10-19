@@ -3,7 +3,7 @@ import {Observable} from "rxjs";
 import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
-import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery} from "prettygoat";
+import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery, LoggingContext} from "prettygoat";
 
 const {Request} = require("hammock");
 
@@ -30,6 +30,7 @@ export type ClusterChange = {
 }
 
 @injectable()
+@LoggingContext("Cluster")
 export class Cluster implements ICluster {
     ringpop: any;
     requestSource: Observable<RequestData>;

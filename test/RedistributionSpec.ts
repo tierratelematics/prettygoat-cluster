@@ -3,7 +3,7 @@ import expect = require("expect.js");
 import {IMock, Mock, Times, It} from "typemoq";
 import {has} from "lodash";
 import {
-    IProjectionEngine, IProjectionRegistry, IProjection, Dictionary, NullLogger, IProjectionRunner, ProjectionStats
+    IProjectionEngine, IProjectionRegistry, IProjection, Dictionary, IProjectionRunner, ProjectionStats
 } from "prettygoat";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
@@ -35,7 +35,7 @@ describe("Given a set of projections to redistribute", () => {
         ]);
         cluster = Mock.ofType<ICluster>();
         engine = Mock.ofType<IProjectionEngine>();
-        subject = new ClusteredProjectionEngine(engine.object, registry.object, holder, cluster.object, NullLogger);
+        subject = new ClusteredProjectionEngine(engine.object, registry.object, holder, cluster.object);
     });
 
     context("when a projection is assigned to a node", () => {
