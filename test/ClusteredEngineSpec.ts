@@ -4,8 +4,7 @@ import ClusteredProjectionEngine from "../scripts/ClusteredProjectionEngine";
 import {
     IProjectionEngine,
     IProjectionRegistry,
-    IProjection,
-    NullLogger
+    IProjection
 } from "prettygoat";
 import DynamicNameProjection from "./fixtures/DynamicNameProjection";
 import {ICluster} from "../scripts/Cluster";
@@ -27,7 +26,7 @@ describe("Given a set of nodes", () => {
         ]);
         cluster = Mock.ofType<ICluster>();
         engine = Mock.ofType<IProjectionEngine>();
-        subject = new ClusteredProjectionEngine(engine.object, registry.object, {}, cluster.object, NullLogger);
+        subject = new ClusteredProjectionEngine(engine.object, registry.object, {}, cluster.object);
     });
     context("when the cluster starts", () => {
         beforeEach(() => {
