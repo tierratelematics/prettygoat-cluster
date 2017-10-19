@@ -1,3 +1,7 @@
+# 3.1.0
+
+Add contextual logging
+
 # 3.0.0
 
 Support for prettygoat 5.0

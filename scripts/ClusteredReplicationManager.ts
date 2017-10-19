@@ -1,13 +1,15 @@
 import {inject, optional, injectable} from "inversify";
 import {IClusterConfig, EmbeddedClusterConfig} from "./ClusterConfig";
 import * as cluster from "cluster";
-import {ILogger, IReplicationManager} from "prettygoat";
+import {ILogger, IReplicationManager, NullLogger, LoggingContext} from "prettygoat";
 
 @injectable()
+@LoggingContext("ClusteredReplicationManager")
 class ClusteredReplicationManager implements IReplicationManager {
 
-    constructor(@inject("ILogger") private logger: ILogger,
-                @inject("IClusterConfig") @optional() private config: IClusterConfig = new EmbeddedClusterConfig()) {
+    @inject("ILogger") private logger: ILogger = NullLogger;
+
+    constructor(@inject("IClusterConfig") @optional() private config: IClusterConfig = new EmbeddedClusterConfig()) {
 
     }
 
