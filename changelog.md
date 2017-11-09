@@ -1,3 +1,7 @@
+# 3.1.1
+
+Small logging fixes
+
 # 3.1.0
 
 Add contextual logging
