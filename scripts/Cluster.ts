@@ -128,7 +128,8 @@ export class Cluster implements ICluster {
     }
 
     changes(): Observable<ClusterChange> {
-        return Observable.fromEvent<ClusterChange>(this.ringpop, "ringChanged");
+        return Observable.fromEvent<ClusterChange>(this.ringpop, "ringChanged")
+            .do(data => this.logger.debug(`Ring changed ${JSON.stringify(data)}`));
     }
 
 }
