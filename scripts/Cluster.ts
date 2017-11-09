@@ -35,10 +35,11 @@ export class Cluster implements ICluster {
     ringpop: any;
     requestSource: Observable<RequestData>;
 
+    @inject("ILogger") private logger: ILogger;
+    
     constructor(@inject("IClusterConfig") @optional() private clusterConfig = new EmbeddedClusterConfig(),
                 @inject("IRequestParser") private requestParser: IRequestParser,
-                @inject("IMiddlewareTransformer") private middlewareTransformer: IMiddlewareTransformer,
-                @inject("ILogger") private logger: ILogger) {
+                @inject("IMiddlewareTransformer") private middlewareTransformer: IMiddlewareTransformer) {
 
     }
 
