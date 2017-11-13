@@ -69,20 +69,45 @@ describe("Given a clustered health check", () => {
     });
 
     context("when a node is added", () => {
-        beforeEach(() => {
-            cluster.setup(c => c.changes()).returns(() => Observable.of({
-                added: ["127.0.0.1:4002"],
-                removed: []
-            }));
-        });
-        it("should update the members list", () => {
-            subject.handle(request, response.object);
+        context("when it's not already in the members list", () => {
+            beforeEach(() => {
+                cluster.setup(c => c.changes()).returns(() => Observable.of({
+                    added: ["127.0.0.1:4002"],
+                    removed: []
+                }));
+            });
+            it("should update the members list", () => {
+                subject.handle(request, response.object);
 
-            response.verify(r => r.send(It.isValue({
-                members: ["127.0.0.1:4000", "127.0.0.1:4001", "127.0.0.1:4002"],
-                unreachables: [],
-                projections: ["proj1"]
-            })), Times.once());
+                response.verify(r => r.send(It.isValue({
+                    members: ["127.0.0.1:4000", "127.0.0.1:4001", "127.0.0.1:4002"],
+                    unreachables: [],
+                    projections: ["proj1"]
+                })), Times.once());
+            });
+        });
+        context("when it's already in the members list", () => {
+            beforeEach(() => {
+                cluster.setup(c => c.changes()).returns(() => Observable.create(observer => {
+                    observer.next({
+                        added: ["127.0.0.1:4002"],
+                        removed: []
+                    });
+                    observer.next({
+                        added: ["127.0.0.1:4002"],
+                        removed: []
+                    });
+                }));
+            });
+            it("should not update the members list", () => {
+                subject.handle(request, response.object);
+
+                response.verify(r => r.send(It.isValue({
+                    members: ["127.0.0.1:4000", "127.0.0.1:4001", "127.0.0.1:4002"],
+                    unreachables: [],
+                    projections: ["proj1"]
+                })), Times.once());
+            });
         });
     });
 });

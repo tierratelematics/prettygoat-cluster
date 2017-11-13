@@ -1,3 +1,7 @@
+# 3.1.2
+
+Fix health check on duplicated members requests
+
 # 3.1.1
 
 Small logging fixes
