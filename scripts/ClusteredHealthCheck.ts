@@ -3,7 +3,7 @@ import {inject} from "inversify";
 import {ICluster} from "./Cluster";
 import {IClusterConfig} from "./ClusterConfig";
 import {Subscription} from "rxjs";
-import {reduce, difference, concat} from "lodash";
+import {reduce, difference, concat, uniq} from "lodash";
 
 type SystemStatus = {
     members: string[];
@@ -35,11 +35,15 @@ class ClusteredHealthCheck implements IRequestHandler {
         response.send(this.status);
     }
 
+    keyFor(request: IRequest): string {
+        return null;
+    }
+
     private subscribeToClusterChanges() {
         this.subscription = this.cluster.changes().subscribe(change => {
             this.status.members = difference(this.status.members, change.removed);
-            this.status.unreachables = concat(this.status.unreachables, change.removed);
-            this.status.members = concat(this.status.members, change.added);
+            this.status.unreachables = uniq(concat(this.status.unreachables, change.removed));
+            this.status.members = uniq(concat(this.status.members, change.added));
             this.status.unreachables = difference(this.status.unreachables, change.added);
             this.status.projections = this.runningProjections();
         });
@@ -50,10 +54,6 @@ class ClusteredHealthCheck implements IRequestHandler {
             if (this.cluster.canHandle(entry[1].name)) result.push(entry[1].name);
             return result;
         }, []);
-    };
-
-    keyFor(request: IRequest): string {
-        return null;
     }
 }
 
