@@ -46,27 +46,21 @@ export class Cluster implements ICluster {
     startup(): Observable<void> {
         return Observable.create(observer => {
             PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
+                let proxyLogger = {
+                    trace: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
+                    debug: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
+                    error: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
+                    fatal: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
+                    info: (message, data) => this.logger.info(`${message} ${JSON.stringify(data)}`),
+                    warn: (message, data) => this.logger.warning(`${message} ${JSON.stringify(data)}`)
+                };
                 let tchannel = new TChannel({
-                    logger: {
-                        trace: this.logger.debug.bind(this.logger),
-                        debug: this.logger.debug.bind(this.logger),
-                        error: this.logger.error.bind(this.logger),
-                        fatal: this.logger.error.bind(this.logger),
-                        info: this.logger.info.bind(this.logger),
-                        warn: this.logger.warning.bind(this.logger)
-                    }
+                    logger: proxyLogger
                 });
                 this.ringpop = new Ringpop({
                     app: "prettygoat-cluster",
                     hostPort: `${this.clusterConfig.host}:${port}`,
-                    logger: {
-                        trace: this.logger.debug.bind(this.logger),
-                        debug: this.logger.debug.bind(this.logger),
-                        error: this.logger.error.bind(this.logger),
-                        fatal: this.logger.error.bind(this.logger),
-                        info: this.logger.info.bind(this.logger),
-                        warn: this.logger.warning.bind(this.logger)
-                    },
+                    logger: proxyLogger,
                     channel: tchannel.makeSubChannel({
                         serviceName: "ringpop",
                         trace: false
