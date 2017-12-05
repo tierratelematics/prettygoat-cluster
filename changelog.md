@@ -1,3 +1,7 @@
+# 3.1.3
+
+Log metadata
+
 # 3.1.2
 
 Fix health check on duplicated members requests
