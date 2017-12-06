@@ -1,3 +1,7 @@
+# 3.1.4
+
+Little optimizations
+
 # 3.1.3
 
 Log metadata
