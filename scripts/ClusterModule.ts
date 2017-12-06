@@ -19,7 +19,7 @@ class ClusterModule implements IModule {
         container.bind<IProjectionEngine>("ProjectionEngine").to(ProjectionEngine).inSingletonScope().whenInjectedInto(ClusteredProjectionEngine);
         container.rebind("IProjectionEngine").to(ClusteredProjectionEngine).inSingletonScope();
         container.rebind("ISocketFactory").to(ClusteredSocketFactory).inSingletonScope();
-        container.rebind("IReplicationManager").to(ClusteredReplicationManager).inSingletonScope();
+        // container.rebind("IReplicationManager").to(ClusteredReplicationManager).inSingletonScope();
         container.rebind("IRequestAdapter").to(ClusteredRequestAdapter).inSingletonScope();
         container.rebind("IReadModelRetriever").to(ClusteredReadModelRetriever).inSingletonScope();
         container.rebind("IReadModelNotifier").to(ClusteredReadModelNotifier).inSingletonScope();

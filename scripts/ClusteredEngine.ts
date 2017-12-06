@@ -20,13 +20,11 @@ class ClusteredEngine extends Engine {
             requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
             logger = this.container.get<ILogger>("ILogger").createChildLogger("ClusteredEngine");
 
-        cluster.startup().subscribe(() => {
-            projectionEngine.run();
-            cluster.requests().subscribe(message => {
-                requestAdapter.route(message[0], message[1]);
-            });
-            cluster.changes().subscribe(() => projectionEngine.run());
-        }, error => logger.error(error));
+        cluster.startup().take(1).concat(cluster.changes()).subscribe(() => projectionEngine.run(), error => logger.error(error));
+
+        cluster.requests().subscribe(message => {
+            requestAdapter.route(message[0], message[1]);
+        });
     }
 }
 

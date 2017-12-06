@@ -4,6 +4,7 @@ import {EmbeddedClusterConfig} from "./ClusterConfig";
 import {IncomingMessage} from "http";
 import {ServerResponse} from "http";
 import {RequestData, IMiddlewareTransformer, IRequestParser, ILogger, PortDiscovery, LoggingContext} from "prettygoat";
+import {isEqual} from "lodash";
 
 const {Request} = require("hammock");
 
@@ -124,6 +125,7 @@ export class Cluster implements ICluster {
 
     changes(): Observable<ClusterChange> {
         return Observable.fromEvent<ClusterChange>(this.ringpop, "ringChanged")
+            .distinctUntilChanged((first, second) => !isEqual(first, second))
             .do(data => this.logger.debug(`Ring changed ${JSON.stringify(data)}`));
     }
 
