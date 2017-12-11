@@ -93,7 +93,7 @@ export class Cluster implements ICluster {
     }
 
     canHandle(key: string): boolean {
-        return this.ringpop.whoami() === this.ringpop.lookup(key);
+        return !this.ringpop ? true: this.ringpop.whoami() === this.ringpop.lookup(key);
     }
 
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean {
