@@ -1,6 +1,7 @@
 import ClusterModule from "./ClusterModule";
 import {IReplicationManager, IProjectionEngine, IRequestAdapter, Engine, ILogger} from "prettygoat";
 import {ICluster} from "./Cluster";
+import {Observable} from "rxjs";
 
 class ClusteredEngine extends Engine {
 
@@ -9,7 +10,7 @@ class ClusteredEngine extends Engine {
         this.register(new ClusterModule());
     }
 
-    run(overrides?: any) {
+    async run(overrides?: any) {
         this.boot(overrides);
         let replicationManager = this.container.get<IReplicationManager>("IReplicationManager");
         if (replicationManager.isMaster())
@@ -20,6 +21,9 @@ class ClusteredEngine extends Engine {
             requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
             logger = this.container.get<ILogger>("ILogger").createChildLogger("ClusteredEngine");
 
+        if (overrides && overrides.startupDelay)
+            await overrides.startupDelay();
+
         cluster.startup()
             .take(1)
             .do(() => {
@@ -27,7 +31,7 @@ class ClusteredEngine extends Engine {
                     requestAdapter.route(message[0], message[1]);
                 });
             })
-            .concat(cluster.changes()).subscribe(() => projectionEngine.run(), error => logger.error(error));
+            .concat(Observable.defer(() => cluster.changes())).subscribe(() => projectionEngine.run(), error => logger.error(error));
     }
 }
 

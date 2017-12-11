@@ -1,3 +1,7 @@
+# 3.2.0
+
+Add startup delay for initial cluster synchronization
+
 # 3.1.5
 
 Little optimizations
