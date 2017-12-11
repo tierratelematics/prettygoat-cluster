@@ -13,7 +13,9 @@ install:
 - npm install smild@4.8.1 -g
 - npm install
 - npm install prettygoat@5.1.0
-script: smild test && smild build
+script:
+- smild test
+- smild build
 deploy:
   skip_cleanup: true
   provider: npm
