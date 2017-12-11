@@ -1,4 +1,4 @@
-# 3.2.1
+# 3.2.2
 
 Handle a case when the health check is performed but ringpop is not initialized
 
