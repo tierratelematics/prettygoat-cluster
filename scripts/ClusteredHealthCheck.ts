@@ -27,7 +27,7 @@ class ClusteredHealthCheck implements IRequestHandler {
     }
 
     handle(request: IRequest, response: IResponse) {
-        if (!this.subscription) {
+        if (!this.subscription && this.cluster.isStarted()) {
             this.status.members = this.clusterConfig.nodes;
             this.status.projections = this.runningProjections();
             this.subscribeToClusterChanges();

@@ -13,6 +13,7 @@ const TChannel = require("tchannel");
 
 export interface ICluster {
     startup(): Observable<void>;
+    isStarted(): boolean;
     canHandle(key: string): boolean;
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
     send<T>(key: string, message: ClusterMessage): Promise<T>;
@@ -33,8 +34,10 @@ export type ClusterChange = {
 @injectable()
 @LoggingContext("Cluster")
 export class Cluster implements ICluster {
+
     ringpop: any;
     requestSource: Observable<RequestData>;
+    started = false;
 
     @inject("ILogger") private logger: ILogger;
     
@@ -83,6 +86,7 @@ export class Cluster implements ICluster {
                             observer.error(error);
                         } else {
                             this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
+                            this.started = true;
                             observer.next(null);
                         }
                         observer.complete();
@@ -92,8 +96,12 @@ export class Cluster implements ICluster {
         });
     }
 
+    isStarted(): boolean {
+        return this.started;
+    }
+
     canHandle(key: string): boolean {
-        return !this.ringpop ? true: this.ringpop.whoami() === this.ringpop.lookup(key);
+        return this.ringpop.whoami() === this.ringpop.lookup(key);
     }
 
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean {
