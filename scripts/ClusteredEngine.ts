@@ -10,7 +10,7 @@ class ClusteredEngine extends Engine {
         this.register(new ClusterModule());
     }
 
-    run(overrides?: any) {
+    async run(overrides?: any) {
         this.boot(overrides);
         let replicationManager = this.container.get<IReplicationManager>("IReplicationManager");
         if (replicationManager.isMaster())
@@ -20,6 +20,9 @@ class ClusteredEngine extends Engine {
             cluster = this.container.get<ICluster>("ICluster"),
             requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
             logger = this.container.get<ILogger>("ILogger").createChildLogger("ClusteredEngine");
+
+        if (overrides && overrides.startupDelay)
+            await overrides.startupDelay();
 
         cluster.startup()
             .take(1)
