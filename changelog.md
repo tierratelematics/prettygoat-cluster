@@ -1,3 +1,7 @@
+# 3.2.1
+
+Handle a case when the health check is performed but ringpop is not initialized
+
 # 3.2.0
 
 Add startup delay for initial cluster synchronization
