@@ -32,6 +32,7 @@ describe("Given a clustered health check", () => {
         ]);
         cluster.setup(c => c.canHandle("proj1")).returns(() => true);
         cluster.setup(c => c.canHandle("proj2")).returns(() => false);
+        cluster.setup(c => c.isStarted()).returns(() => true);
         subject = new ClusteredHealthCheck(cluster.object, registry.object, <IClusterConfig>{nodes: ["127.0.0.1:4000", "127.0.0.1:4001"]});
     });
 

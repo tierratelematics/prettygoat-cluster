@@ -121,7 +121,11 @@ export class Cluster implements ICluster {
                 } else {
                     let body = responses[0].res.body;
                     let stringBody = Buffer.isBuffer(body) ? body.toString("utf8") : body;
-                    resolve(JSON.parse(stringBody));
+                    try {
+                        resolve(JSON.parse(stringBody));
+                    } catch (error) {
+                        resolve(<T>{});
+                    }
                 }
             });
         });
