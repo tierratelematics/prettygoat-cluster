@@ -81,6 +81,8 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
     private latestTimestamps: Dictionary<Date> = {};
     private readModelsCache: Dictionary<CachedReadModel> = {};
 
+    @inject("ILogger") private logger: ILogger = NullLogger;
+
     constructor(@inject("ICluster") private cluster: ICluster,
                 @inject("IProjectionRunnerHolder") private holder: Dictionary<IProjectionRunner>,
                 @inject("IReadModelNotifier") private readModelNotifier: IReadModelNotifier) {
@@ -98,17 +100,24 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         if (this.cluster.canHandle(name)) {
             return this.holder[name].state;
         } else {
-            let readmodel = await this.cluster.send<Event>(name, {
-                channel: "readmodel/retrieve",
-                payload: {
-                    readmodel: name
-                }
-            });
-            this.readModelsCache[name] = {
-                timestamp: readmodel.timestamp,
-                payload: readmodel.payload
-            };
-            return readmodel.payload;
+            try {
+                let readmodel = await this.cluster.send<Event>(name, {
+                    channel: "readmodel/retrieve",
+                    payload: {
+                        readmodel: name
+                    }
+                });
+
+                this.readModelsCache[name] = {
+                    timestamp: readmodel.timestamp,
+                    payload: readmodel.payload
+                };
+                return readmodel.payload;
+            } catch (error) {
+                this.logger.error(error);
+            }
+            
+            return null;
         }
     }
 
