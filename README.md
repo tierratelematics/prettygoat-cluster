@@ -60,9 +60,15 @@ Example configuration:
 In order to correctly send notifications between all the instances of socket.io server, you need to provide a Redis configuration.
 
 ```typescript
-container.bind<IRedisConfig>("IRedisConfig").toConstantValue({
-    host: "localhost",
-    port: 6379
+container.bind<IClusterConfig>("IClusterConfig").toConstantValue({
+    nodes: ["127.0.0.1:4000", "127.0.0.1:4001"],
+    port: 4000,
+    host: "127.0.0.1",
+    forks: 2,
+    redis: {
+      host: "localhost",
+      port: 6379
+    }
 });
 ```
 

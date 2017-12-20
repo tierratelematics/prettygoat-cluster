@@ -13,47 +13,64 @@ import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
 import {forEach, reduce, uniq, includes} from "lodash";
 import {ICluster} from "./Cluster";
+import { ILogger, NullLogger } from "prettygoat";
 
 @injectable()
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
-    private publisher: IAsyncPublisher<Event>;
-    private localChanges = new Subject<Event>();
-    private dependents: Dictionary<string[]> = {};
+    private localChanges = new Subject<[Event, string]>();
+    private dependants: Dictionary<string[]> = {};
+    private publishers: Dictionary<IAsyncPublisher<any>> = {};
+
+    @inject("ILogger") private logger: ILogger = NullLogger;
 
     constructor(@inject("IProjectionRegistry") private registry: IProjectionRegistry,
                 @inject("ICluster") private cluster: ICluster,
-                @inject("IAsyncPublisherFactory") asyncPublisherFactory: IAsyncPublisherFactory) {
-        this.publisher = asyncPublisherFactory.publisherFor<Event>(<IProjectionRunner>{stats: {realtime: true}});
-        this.publisher.items(item => item.payload).subscribe(change => {
-            let readmodel = change.payload,
-                dependents = this.dependents[change.payload] || this.dependantsFor(readmodel);
-            this.dependents[readmodel] = dependents;
-            forEach(dependents, dependent => {
-                if (this.cluster.canHandle(dependent)) {
-                    this.localChanges.next(change);
-                } else {
-                    this.cluster.send(dependent, {channel: "readmodel/change", payload: change});
-                }
-            });
-        });
+                @inject("IAsyncPublisherFactory") private asyncPublisherFactory: IAsyncPublisherFactory,
+                @inject("IProjectionRunnerHolder") private runners: Dictionary<IProjectionRunner>) {
+       
     }
 
-    changes(name: string): Observable<Event> {
+    changes(name: string): Observable<[Event, string]> {
         return this.cluster.requests()
             .filter(request => request[0].url === "pgoat://readmodel/change")
             .map(requestData => requestData[0].body)
-            .filter(change => change.payload === name)
+            .filter(change => change[0].payload === name)
             .merge(this.localChanges);
     }
 
-    notifyChanged(name: string, timestamp: Date, eventId?: string) {
-        this.publisher.publish({
+    notifyChanged(event: Event, context: string) {
+        let publisher = this.publisherFor(event.type);
+        publisher.publish([{
             type: SpecialEvents.READMODEL_CHANGED,
-            payload: name,
-            timestamp: timestamp,
-            id: eventId
-        });
+            payload: event.type,
+            timestamp: event.timestamp,
+            id: event.id,
+            metadata: event.metadata
+        }, context]);
+    }
+
+    private publisherFor(readmodel: string): IAsyncPublisher<[Event, string]> {
+        let publisher = this.publishers[readmodel];
+        if (!publisher) {
+            let runner = this.runners[readmodel];
+            publisher = this.publishers[readmodel] = this.asyncPublisherFactory.publisherFor(runner);
+            publisher.items(item => item[1]).subscribe(change => {
+                let dependants = this.dependants[readmodel] || this.dependantsFor(readmodel);
+                this.dependants[readmodel] = dependants;
+                forEach(dependants, dependant => {
+                    if (this.cluster.canHandle(dependant)) {
+                        this.localChanges.next(change);
+                    } else {
+                        this.cluster.send(dependant, {channel: "readmodel/change", payload: change}).catch(error => {
+                            this.logger.error(error);
+                        });
+                    }
+                });
+            });
+        }
+        
+        return publisher;
     }
 
     private dependantsFor(readmodel: string): string[] {
@@ -77,9 +94,11 @@ type CachedReadModel<T = any> = {
 @injectable()
 export class ClusteredReadModelRetriever implements IReadModelRetriever {
 
-    private readModelsChanges: Dictionary<Observable<Event>> = {};
+    private readModelsChanges: Dictionary<Observable<[Event, string]>> = {};
     private latestTimestamps: Dictionary<Date> = {};
     private readModelsCache: Dictionary<CachedReadModel> = {};
+
+    @inject("ILogger") private logger: ILogger = NullLogger;
 
     constructor(@inject("ICluster") private cluster: ICluster,
                 @inject("IProjectionRunnerHolder") private holder: Dictionary<IProjectionRunner>,
@@ -98,17 +117,24 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         if (this.cluster.canHandle(name)) {
             return this.holder[name].state;
         } else {
-            let readmodel = await this.cluster.send<Event>(name, {
-                channel: "readmodel/retrieve",
-                payload: {
-                    readmodel: name
-                }
-            });
-            this.readModelsCache[name] = {
-                timestamp: readmodel.timestamp,
-                payload: readmodel.payload
-            };
-            return readmodel.payload;
+            try {
+                let readmodel = await this.cluster.send<Event>(name, {
+                    channel: "readmodel/retrieve",
+                    payload: {
+                        readmodel: name
+                    }
+                });
+
+                this.readModelsCache[name] = {
+                    timestamp: readmodel.timestamp,
+                    payload: readmodel.payload
+                };
+                return readmodel.payload;
+            } catch (error) {
+                this.logger.error(error);
+            }
+            
+            return null;
         }
     }
 
@@ -116,7 +142,7 @@ export class ClusteredReadModelRetriever implements IReadModelRetriever {
         let source = this.readModelsChanges[name];
         if (!source) {
             source = this.readModelsChanges[name] = this.readModelNotifier.changes(name);
-            source.subscribe(change => this.latestTimestamps[name] = change.timestamp);
+            source.subscribe(change => this.latestTimestamps[name] = change[0].timestamp);
         }
     }
 }

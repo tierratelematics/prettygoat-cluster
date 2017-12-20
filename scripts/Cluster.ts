@@ -124,7 +124,7 @@ export class Cluster implements ICluster {
                     try {
                         resolve(JSON.parse(stringBody));
                     } catch (error) {
-                        resolve(<T>{});
+                        reject(error);
                     }
                 }
             });
