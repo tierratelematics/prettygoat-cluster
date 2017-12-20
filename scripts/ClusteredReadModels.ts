@@ -35,7 +35,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
         return this.cluster.requests()
             .filter(request => request[0].url === "pgoat://readmodel/change")
             .map(requestData => requestData[0].body)
-            .filter(change => change.payload === name)
+            .filter(change => change[0].payload === name)
             .merge(this.localChanges);
     }
 

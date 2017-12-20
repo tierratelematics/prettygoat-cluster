@@ -33,7 +33,8 @@ class ClusteredEngine extends Engine {
             }, error => {
                 throw error; // Make the process stop if the cluster goes down
             })
-            .concat(Observable.defer(() => cluster.changes())).subscribe(() => projectionEngine.run(), error => logger.error(error));
+            .concat(Observable.defer(() => cluster.changes()))
+            .subscribe(() => projectionEngine.run(), error => logger.error(error));
     }
 }
 
