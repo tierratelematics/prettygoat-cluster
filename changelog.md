@@ -1,3 +1,7 @@
+# 4.0.0
+
+Add support for prettygoat 6
+
 # 3.2.3
 
 Minor bugfix
