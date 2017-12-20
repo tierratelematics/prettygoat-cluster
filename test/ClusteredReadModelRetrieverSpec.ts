@@ -2,7 +2,7 @@ import "reflect-metadata";
 import expect = require("expect.js");
 import {ClusteredReadModelRetriever} from "../scripts/ClusteredReadModels";
 import {IMock, Mock, Times, It} from "typemoq";
-import {IProjectionRunner, IReadModelNotifier, SpecialEvents} from "prettygoat";
+import {IProjectionRunner, IReadModelNotifier, SpecialEvents, Event} from "prettygoat";
 import {Observable} from "rxjs";
 import {ICluster} from "../scripts/Cluster";
 
@@ -26,11 +26,11 @@ describe("Given a clustered readmodel retriever", () => {
     context("when requesting a readmodel state", () => {
         context("when it's not retrieved yet", () => {
             beforeEach(() => {
-                readmodelNotifier.setup(r => r.changes("readmodel")).returns(() => Observable.of({
+                readmodelNotifier.setup(r => r.changes("readmodel")).returns(() => Observable.of<[Event, string]>([{
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel",
                     timestamp: new Date(6000)
-                }));
+                }, null]));
             });
             context("when it's on the same node", () => {
                 beforeEach(() => {
