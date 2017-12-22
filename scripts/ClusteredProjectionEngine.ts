@@ -1,5 +1,5 @@
 import {inject, injectable} from "inversify";
-import {forEach} from "lodash";
+import {forEach, filter, concat} from "lodash";
 import {
     ILogger, IProjectionEngine, IProjection,
     IProjectionRegistry, Dictionary, IProjectionRunner, NullLogger, LoggingContext
@@ -23,8 +23,9 @@ class ClusteredProjectionEngine implements IProjectionEngine {
         if (projection) {
             this.engine.run(projection);
         } else {
-            let projections = this.registry.projections();
-            forEach(projections, entry => {
+            let projections = filter(this.registry.projections(), entry => !!entry[1].publish),
+                readmodels = filter(this.registry.projections(), entry => !entry[1].publish);
+            forEach(concat(readmodels, projections), entry => {
                 let registeredProjection = entry[1],
                     logger = this.logger.createChildLogger(registeredProjection.name),
                     runner = this.holder[registeredProjection.name];
