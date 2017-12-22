@@ -13,14 +13,14 @@ import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
 import {forEach, reduce, uniq, includes} from "lodash";
 import {ICluster} from "./Cluster";
-import { ILogger, NullLogger } from "prettygoat";
+import { ILogger, NullLogger, ReadModelNotification } from "prettygoat";
 
 @injectable()
 export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
-    private localChanges = new Subject<[Event, string]>();
+    private localChanges = new Subject<ReadModelNotification>();
     private dependants: Dictionary<string[]> = {};
-    private publishers: Dictionary<IAsyncPublisher<any>> = {};
+    private publishers: Dictionary<IAsyncPublisher<ReadModelNotification>> = {};
 
     @inject("ILogger") private logger: ILogger = NullLogger;
 
@@ -31,7 +31,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
        
     }
 
-    changes(name: string): Observable<[Event, string]> {
+    changes(name: string): Observable<ReadModelNotification> {
         return this.cluster.requests()
             .filter(request => request[0].url === "pgoat://readmodel/change")
             .map(requestData => requestData[0].body)
@@ -39,7 +39,7 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
             .merge(this.localChanges);
     }
 
-    notifyChanged(event: Event, context: string) {
+    notifyChanged(event: Event, contexts: string[]) {
         let publisher = this.publisherFor(event.type);
         publisher.publish([{
             type: SpecialEvents.READMODEL_CHANGED,
@@ -47,15 +47,17 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
             timestamp: event.timestamp,
             id: event.id,
             metadata: event.metadata
-        }, context]);
+        }, contexts]);
     }
 
-    private publisherFor(readmodel: string): IAsyncPublisher<[Event, string]> {
+    private publisherFor(readmodel: string): IAsyncPublisher<ReadModelNotification> {
         let publisher = this.publishers[readmodel];
         if (!publisher) {
             let runner = this.runners[readmodel];
             publisher = this.publishers[readmodel] = this.asyncPublisherFactory.publisherFor(runner);
-            publisher.items(item => item[1]).subscribe(change => {
+            publisher.bufferedItems(item => item[1])
+                .map(notification => <ReadModelNotification>[notification[0][0], notification[1]])
+                .subscribe(change => {
                 let dependants = this.dependants[readmodel] || this.dependantsFor(readmodel);
                 this.dependants[readmodel] = dependants;
                 forEach(dependants, dependant => {
@@ -94,7 +96,7 @@ type CachedReadModel<T = any> = {
 @injectable()
 export class ClusteredReadModelRetriever implements IReadModelRetriever {
 
-    private readModelsChanges: Dictionary<Observable<[Event, string]>> = {};
+    private readModelsChanges: Dictionary<Observable<ReadModelNotification>> = {};
     private latestTimestamps: Dictionary<Date> = {};
     private readModelsCache: Dictionary<CachedReadModel> = {};
 
