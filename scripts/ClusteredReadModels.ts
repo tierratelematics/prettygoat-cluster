@@ -11,7 +11,7 @@ import {
 } from "prettygoat";
 import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
-import {forEach, reduce, uniq, includes, last, union, map} from "lodash";
+import {forEach, reduce, uniq, includes} from "lodash";
 import {ICluster} from "./Cluster";
 import { ILogger, NullLogger, ReadModelNotification } from "prettygoat";
 
