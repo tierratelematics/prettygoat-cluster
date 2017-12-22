@@ -19,19 +19,20 @@ class ClusteredProjectionEngine implements IProjectionEngine {
 
     }
 
-    run(projection?: IProjection<any>) {
+    async run(projection?: IProjection<any>) {
         if (projection) {
-            this.engine.run(projection);
+            await this.engine.run(projection);
         } else {
             let projections = filter(this.registry.projections(), entry => !!entry[1].publish),
                 readmodels = filter(this.registry.projections(), entry => !entry[1].publish);
-            forEach(concat(readmodels, projections), entry => {
+
+            for (const entry of concat(readmodels, projections)) {
                 let registeredProjection = entry[1],
                     logger = this.logger.createChildLogger(registeredProjection.name),
                     runner = this.holder[registeredProjection.name];
                 if (this.cluster.canHandle(registeredProjection.name)) {
                     if (!runner || (runner && !runner.stats.running)) {
-                        this.run(registeredProjection);
+                        await this.run(registeredProjection);
                         logger.info(`Projection running`);
                     }
                 } else if (runner && runner.stats.running) {
@@ -39,8 +40,7 @@ class ClusteredProjectionEngine implements IProjectionEngine {
                     logger.info(`Projection stopped`);
                     delete this.holder[registeredProjection.name];
                 }
-            });
-
+            }
         }
     }
 }
