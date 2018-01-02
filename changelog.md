@@ -1,3 +1,7 @@
+# 4.1.1
+
+Sampling cluster changes
+
 # 4.1.0
 
 Add support for prettygoat 6.1
