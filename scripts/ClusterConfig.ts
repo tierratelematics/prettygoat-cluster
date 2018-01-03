@@ -3,10 +3,6 @@ export interface IClusterConfig {
     port: number;
     host: string;
     forks: number;
-    redis?: {
-        host: string;
-        port: number;
-    };
 }
 
 export class EmbeddedClusterConfig implements IClusterConfig {
