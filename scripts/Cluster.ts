@@ -12,7 +12,8 @@ const Ringpop = require("ringpop");
 const TChannel = require("tchannel");
 
 export interface ICluster {
-    startup(): Observable<void>;
+    bind(): Promise<void>;
+    start(): Promise<void>;
     isStarted(): boolean;
     canHandle(key: string): boolean;
     handleOrProxy(key: string, request: IncomingMessage, response: ServerResponse): boolean;
@@ -47,52 +48,57 @@ export class Cluster implements ICluster {
 
     }
 
-    startup(): Observable<void> {
-        return Observable.create(observer => {
-            PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host).then(port => {
-                let proxyLogger = {
-                    trace: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
-                    debug: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
-                    error: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
-                    fatal: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
-                    info: (message, data) => this.logger.info(`${message} ${JSON.stringify(data)}`),
-                    warn: (message, data) => this.logger.warning(`${message} ${JSON.stringify(data)}`)
-                };
-                let tchannel = new TChannel({
-                    logger: proxyLogger
+    async bind(): Promise<void> {
+        let port = await PortDiscovery.freePort(this.clusterConfig.port, this.clusterConfig.host);
+        let proxyLogger = {
+            trace: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
+            debug: (message, data) => this.logger.debug(`${message} ${JSON.stringify(data)}`),
+            error: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
+            fatal: (message, data) => this.logger.error(`${message} ${JSON.stringify(data)}`),
+            info: (message, data) => this.logger.info(`${message} ${JSON.stringify(data)}`),
+            warn: (message, data) => this.logger.warning(`${message} ${JSON.stringify(data)}`)
+        };
+        let tchannel = new TChannel({
+            logger: proxyLogger
+        });
+        this.ringpop = new Ringpop({
+            app: "prettygoat-cluster",
+            hostPort: `${this.clusterConfig.host}:${port}`,
+            logger: proxyLogger,
+            channel: tchannel.makeSubChannel({
+                serviceName: "ringpop",
+                trace: false
+            })
+        });
+        this.requestSource = Observable.create(requestObserver => {
+            this.ringpop.on("request", (request, response) => {
+                let requestData = this.requestParser.parse(request, response);
+                this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
+                    requestObserver.next(data);
                 });
-                this.ringpop = new Ringpop({
-                    app: "prettygoat-cluster",
-                    hostPort: `${this.clusterConfig.host}:${port}`,
-                    logger: proxyLogger,
-                    channel: tchannel.makeSubChannel({
-                        serviceName: "ringpop",
-                        trace: false
-                    })
-                });
-                this.requestSource = Observable.create(requestObserver => {
-                    this.ringpop.on("request", (request, response) => {
-                        let requestData = this.requestParser.parse(request, response);
-                        this.middlewareTransformer.transform(requestData[0], requestData[1]).then(data => {
-                            requestObserver.next(data);
-                        });
-                    });
-                }).share();
-                this.ringpop.setupChannel();
-                tchannel.listen(port, this.clusterConfig.host, () => {
-                    this.logger.info(`TChannel listening on ${port}`);
-                    this.ringpop.bootstrap(this.clusterConfig.nodes, (error, nodes) => {
-                        if (error) {
-                            observer.error(error);
-                        } else {
-                            this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
-                            this.started = true;
-                            observer.next(null);
-                        }
-                        observer.complete();
-                    });
-                });
-            }).catch(error => this.logger.error(error));
+            });
+        }).share();
+        this.ringpop.setupChannel();
+
+        return new Promise<void>((resolve, reject) => {
+            tchannel.listen(port, this.clusterConfig.host, () => {
+                this.logger.info(`TChannel listening on ${port}`);
+                resolve();
+            });
+        });
+    }
+
+    start(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            this.ringpop.bootstrap(this.clusterConfig.nodes, (error, nodes) => {
+                if (error) {
+                    reject(error);
+                } else {
+                    this.logger.debug(`Nodes joined ${JSON.stringify(nodes)}`);
+                    this.started = true;
+                    resolve();
+                }
+            });
         });
     }
 
