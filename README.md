@@ -57,19 +57,21 @@ Example configuration:
 
 ## Socket.io clustering
 
-In order to correctly send notifications between all the instances of socket.io server, you need to provide a Redis configuration.
+In order to correctly send notifications between all the instances of socket.io server, you need to provide a Redis client.
 
 ```typescript
-container.bind<IClusterConfig>("IClusterConfig").toConstantValue({
-    nodes: ["127.0.0.1:4000", "127.0.0.1:4001"],
-    port: 4000,
-    host: "127.0.0.1",
-    forks: 2,
-    redis: {
-      host: "localhost",
-      port: 6379
-    }
-});
+const Redis = require("ioredis");
+
+container.bind("RedisClient").toConstantValue(new Redis.Cluster([
+  {
+    port: 6380,
+    host: '127.0.0.1'
+  },
+  {
+    port: 6381,
+    host: '127.0.0.1'
+  }
+]));
 ```
 
 ## License

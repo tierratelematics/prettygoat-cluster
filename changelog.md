@@ -1,3 +1,7 @@
+# 4.2.0
+
+Pass redis client for clustering socket.io
+
 # 4.1.1
 
 Sampling cluster changes

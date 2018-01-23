@@ -1,6 +1,6 @@
 {
   "name": "prettygoat-cluster",
-  "version": "4.1.1",
+  "version": "4.2.0",
   "dependencies": {
     "hammock": "~2.0.1",
     "inversify": "^4.3.0",

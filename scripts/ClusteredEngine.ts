@@ -21,11 +21,12 @@ class ClusteredEngine extends Engine {
             requestAdapter = this.container.get<IRequestAdapter>("IRequestAdapter"),
             logger = this.container.get<ILogger>("ILogger").createChildLogger("ClusteredEngine");
 
+        await cluster.bind();
+        
         if (overrides && overrides.startupDelay)
             await overrides.startupDelay();
 
-        cluster.startup()
-            .take(1)
+        Observable.from(cluster.start())
             .do(() => {
                 cluster.requests().subscribe(message => {
                     requestAdapter.route(message[0], message[1]);
