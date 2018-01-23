@@ -3,7 +3,7 @@ const io = require("socket.io");
 import * as redis from "socket.io-redis";
 import {IServerProvider, ISocketFactory} from "prettygoat";
 import { IClusterConfig } from "./ClusterConfig";
-import { optional } from "inversify/dts/annotation/optional";
+import { optional } from "inversify";
 
 @injectable()
 class ClusteredSocketFactory implements ISocketFactory {
