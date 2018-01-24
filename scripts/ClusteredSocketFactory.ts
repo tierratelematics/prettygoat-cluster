@@ -22,7 +22,7 @@ class ClusteredSocketFactory implements ISocketFactory {
                 path: path || "socket.io"
             });
             if (this.redisClient) {
-                this.socket.adapter(redis({pubClient: this.redisClient, subClient: this.redisClient}));
+                this.socket.adapter(redis({pubClient: this.redisClient(), subClient: this.redisClient()}));
             }
         }
 
