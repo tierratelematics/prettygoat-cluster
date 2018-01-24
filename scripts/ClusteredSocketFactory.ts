@@ -3,7 +3,7 @@ const io = require("socket.io");
 import * as redis from "socket.io-redis";
 import {IServerProvider, ISocketFactory} from "prettygoat";
 import { IClusterConfig } from "./ClusterConfig";
-import { optional } from "inversify";
+import { optional, interfaces } from "inversify";
 
 @injectable()
 class ClusteredSocketFactory implements ISocketFactory {
@@ -12,7 +12,7 @@ class ClusteredSocketFactory implements ISocketFactory {
 
     constructor(@inject("IServerProvider") private serverProvider: IServerProvider,
                 @inject("IClusterConfig") private clusterConfig: IClusterConfig,
-                @inject("RedisClient") @optional() private redisClient) {
+                @inject("RedisClient") @optional() private redisClient: interfaces.Factory<any>) {
 
     }
 
@@ -22,7 +22,7 @@ class ClusteredSocketFactory implements ISocketFactory {
                 path: path || "socket.io"
             });
             if (this.redisClient) {
-                this.socket.adapter(redis({pubClient: this.redisClient, subClient: this.redisClient}));
+                this.socket.adapter(redis({pubClient: this.redisClient(), subClient: this.redisClient()}));
             }
         }
 
