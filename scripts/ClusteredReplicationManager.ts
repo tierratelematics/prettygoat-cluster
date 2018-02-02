@@ -22,7 +22,7 @@ class ClusteredReplicationManager implements IReplicationManager {
         for (let i = 0; i < this.config.forks; i++) {
             setTimeout(() => {
                 cluster.fork();
-            }, i * 500);
+            }, i * 1000);
         }
         cluster.on("exit", (code, signal) => {
             this.logger.error(`Worker has died with code ${JSON.stringify(code)} and signal ${signal}`);
