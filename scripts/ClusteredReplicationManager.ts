@@ -14,6 +14,9 @@ class ClusteredReplicationManager implements IReplicationManager {
     }
 
     canReplicate(): boolean {
+        // No need to use the cluster module if only a fork is running
+        if (this.config.forks === 1) 
+            return false;
         return true;
     }
 
@@ -27,6 +30,8 @@ class ClusteredReplicationManager implements IReplicationManager {
     }
 
     isMaster(): boolean {
+        if (this.config.forks === 1)
+            return false;
         return cluster.isMaster;
     }
 
