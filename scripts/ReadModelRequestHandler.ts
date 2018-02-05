@@ -11,9 +11,13 @@ class ReadModelRequestHandler implements IRequestHandler {
     handle(request: IRequest, response: IResponse) {
         let readmodel = request.body.readmodel,
             runner = this.holder[readmodel];
-        response.send({
+        
+        response.send(runner ? {
             timestamp: runner.stats.lastEvent,
             payload: runner.state
+        }: {
+            timestamp: null,
+            payload: null
         });
     }
 
