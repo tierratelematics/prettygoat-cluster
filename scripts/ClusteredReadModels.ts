@@ -3,15 +3,13 @@ import {
     Event,
     IReadModelRetriever,
     IProjectionRegistry,
-    IAsyncPublisher,
-    IAsyncPublisherFactory,
+    IProjectionRunner,
     SpecialEvents,
-    Dictionary,
-    IProjectionRunner
+    Dictionary
 } from "prettygoat";
 import {Observable, Subject} from "rxjs";
 import {inject, injectable} from "inversify";
-import {forEach, reduce, uniq, includes} from "lodash";
+import {forEach, reduce, uniq, includes, chain, last} from "lodash";
 import {ICluster} from "./Cluster";
 import { ILogger, NullLogger, ReadModelNotification } from "prettygoat";
 
@@ -20,44 +18,23 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
 
     private localChanges = new Subject<ReadModelNotification>();
     private dependants: Dictionary<string[]> = {};
-    private publishers: Dictionary<IAsyncPublisher<ReadModelNotification>> = {};
+    private subject = new Subject<ReadModelNotification>()
 
     @inject("ILogger") private logger: ILogger = NullLogger;
 
     constructor(@inject("IProjectionRegistry") private registry: IProjectionRegistry,
-                @inject("ICluster") private cluster: ICluster,
-                @inject("IAsyncPublisherFactory") private asyncPublisherFactory: IAsyncPublisherFactory,
-                @inject("IProjectionRunnerHolder") private runners: Dictionary<IProjectionRunner>) {
-       
-    }
-
-    changes(name: string): Observable<ReadModelNotification> {
-        return this.cluster.requests()
-            .filter(request => request[0].url === "pgoat://readmodel/change")
-            .map(requestData => requestData[0].body)
-            .filter(change => change[0].payload === name)
-            .merge(this.localChanges);
-    }
-
-    notifyChanged(event: Event, contexts: string[]) {
-        let publisher = this.publisherFor(event.type);
-        publisher.publish([{
-            type: SpecialEvents.READMODEL_CHANGED,
-            payload: event.type,
-            timestamp: event.timestamp,
-            id: event.id,
-            metadata: event.metadata
-        }, contexts]);
-    }
-
-    private publisherFor(readmodel: string): IAsyncPublisher<ReadModelNotification> {
-        let publisher = this.publishers[readmodel];
-        if (!publisher) {
-            let runner = this.runners[readmodel];
-            publisher = this.publishers[readmodel] = this.asyncPublisherFactory.publisherFor(runner);
-            publisher.bufferedItems(item => item[1])
-                .map(notification => <ReadModelNotification>[notification[0][0], notification[1]])
-                .subscribe(change => {
+                @inject("ICluster") private cluster: ICluster) {
+        this.subject
+            .groupBy(data => data[0].payload)
+            .flatMap(group => group.bufferTime(100))
+            .map(buffer => {
+                if (!buffer.length) return null;
+                let keys = chain(buffer).map(item => item[1]).flatten().uniq().valueOf();
+                return [last(buffer)[0], keys] as ReadModelNotification;
+            })
+            .filter(data => !!data)
+            .subscribe(change => {
+                let readmodel = change[0].payload;
                 let dependants = this.dependants[readmodel] || this.dependantsFor(readmodel);
                 this.dependants[readmodel] = dependants;
                 forEach(dependants, dependant => {
@@ -70,9 +47,24 @@ export class ClusteredReadModelNotifier implements IReadModelNotifier {
                     }
                 });
             });
-        }
-        
-        return publisher;
+    }
+
+    changes(name: string): Observable<ReadModelNotification> {
+        return this.cluster.requests()
+            .filter(request => request[0].url === "pgoat://readmodel/change")
+            .map(requestData => requestData[0].body)
+            .filter(change => change[0].payload === name)
+            .merge(this.localChanges);
+    }
+
+    notifyChanged(event: Event, contexts: string[]) {
+        this.subject.next([{
+            type: SpecialEvents.READMODEL_CHANGED,
+            payload: event.type,
+            timestamp: event.timestamp,
+            id: event.id,
+            metadata: event.metadata
+        }, contexts]);
     }
 
     private dependantsFor(readmodel: string): string[] {
