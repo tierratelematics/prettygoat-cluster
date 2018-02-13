@@ -1,9 +1,9 @@
 import "reflect-metadata";
 import expect = require("expect.js");
 import {ClusteredReadModelNotifier} from "../scripts/ClusteredReadModels";
-import {IProjectionRegistry, IProjection, IAsyncPublisherFactory, IAsyncPublisher, SpecialEvents, Event} from "prettygoat";
+import {IProjectionRegistry, IProjection, SpecialEvents, Event} from "prettygoat";
 import {IMock, Mock, Times, It} from "typemoq";
-import {Observable} from "rxjs";
+import {Observable, Subscription} from "rxjs";
 import MockRequest from "./fixtures/MockRequest";
 import MockResponse from "./fixtures/MockResponse";
 import {ICluster} from "../scripts/Cluster";
@@ -14,7 +14,6 @@ describe("Given a clustered readmodel notifier", () => {
     let subject: ClusteredReadModelNotifier;
     let registry: IMock<IProjectionRegistry>;
     let cluster: IMock<ICluster>;
-    let asyncPublisherFactory: IMock<IAsyncPublisherFactory>;
 
     beforeEach(() => {
         cluster = Mock.ofType<ICluster>();
@@ -42,23 +41,13 @@ describe("Given a clustered readmodel notifier", () => {
             ["Test", proj1.object],
             ["Test", proj2.object],
         ]);
-        asyncPublisherFactory = Mock.ofType<IAsyncPublisherFactory>();
-        subject = new ClusteredReadModelNotifier(registry.object, cluster.object, asyncPublisherFactory.object, {});
+        subject = new ClusteredReadModelNotifier(registry.object, cluster.object);
     });
 
     context("when a new readmodel is processed", () => {
-        beforeEach(() => {
+        beforeEach(async () => {
             cluster.setup(c => c.canHandle("proj1")).returns(() => false);
             cluster.setup(c => c.send(It.isAny(), It.isAny())).returns(() => Promise.resolve(null));
-            asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
-                let publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.bufferedItems(It.is<any>(value => !!value))).returns(() => Observable.of<[ReadModelNotification, string[]]>([[{
-                    type: SpecialEvents.READMODEL_CHANGED,
-                    payload: "readmodel1",
-                    timestamp: new Date(6000)
-                }, null], ["key"]]));
-                return publisher.object;
-            });
             subject.notifyChanged({
                 type: "readmodel1",
                 payload: "projection_state",
@@ -66,6 +55,7 @@ describe("Given a clustered readmodel notifier", () => {
                 id: "test",
                 metadata: {}
             }, ["key"]);
+            await sleep(100)
         });
         it("should send the notification to the dependent nodes", () => {
             cluster.verify(c => c.send("proj1", It.isValue({
@@ -73,38 +63,12 @@ describe("Given a clustered readmodel notifier", () => {
                 payload: [{
                     type: SpecialEvents.READMODEL_CHANGED,
                     payload: "readmodel1",
-                    timestamp: new Date(6000)
+                    timestamp: new Date(6000),
+                    metadata: {},
+                    id: "test"
                 }, ["key"]]
             })), Times.once());
         });
-    });
-
-    context("when a new readmodel is produced", () => {
-        let publisher: IMock<IAsyncPublisher<any>>;
-        beforeEach(() => {
-            asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
-                publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.bufferedItems(It.is<any>(value => !!value))).returns(() => Observable.empty());
-                return publisher.object;
-            });
-            subject.notifyChanged({
-                type: "readmodel1",
-                payload: "projection_state",
-                timestamp: new Date(6000),
-                id: "test",
-                metadata: {}
-            }, null);
-        });
-        it("should be published", () => {
-            publisher.verify(p => p.publish(It.isValue([{
-                type: SpecialEvents.READMODEL_CHANGED,
-                payload: "readmodel1",
-                timestamp: new Date(6000),
-                id: "test",
-                metadata: {}
-            }, null])), Times.once());
-        });
-
     });
 
     context("when the changes of a specific readmodel are requested", () => {
@@ -122,11 +86,6 @@ describe("Given a clustered readmodel notifier", () => {
                     timestamp: new Date(7000)
                 }, null]), new MockResponse()]);
             }));
-            asyncPublisherFactory.setup(a => a.publisherFor(It.isAny())).returns(() => {
-                let publisher = Mock.ofType<IAsyncPublisher<any>>();
-                publisher.setup(p => p.bufferedItems(It.is<any>(value => !!value))).returns(() => Observable.empty());
-                return publisher.object;
-            });
         });
 
         it("should receive all the changes", () => {
@@ -138,4 +97,10 @@ describe("Given a clustered readmodel notifier", () => {
             expect(changes[0][1]).to.be("test-key");
         });
     });
+
+    async function sleep(ms: number) {
+        return new Promise((resolve) => {
+            setTimeout(() => resolve(), ms);
+        });
+    }
 });

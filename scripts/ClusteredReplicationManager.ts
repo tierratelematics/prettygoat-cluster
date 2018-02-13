@@ -14,22 +14,24 @@ class ClusteredReplicationManager implements IReplicationManager {
     }
 
     canReplicate(): boolean {
+        // No need to use the cluster module if only a fork is running
+        if (this.config.forks === 1) 
+            return false;
         return true;
     }
 
     replicate() {
-        // Spawn children after every 500ms (required to correctly bind to free tcp ports)
+        // Spawn children after every 1s (required to correctly bind to free tcp ports)
         for (let i = 0; i < this.config.forks; i++) {
             setTimeout(() => {
                 cluster.fork();
-            }, i * 500);
+            }, i * 1000);
         }
-        cluster.on("exit", (code, signal) => {
-            this.logger.error(`Worker has died with code ${JSON.stringify(code)} and signal ${signal}`);
-        });
     }
 
     isMaster(): boolean {
+        if (this.config.forks === 1)
+            return false;
         return cluster.isMaster;
     }
 
