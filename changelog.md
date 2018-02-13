@@ -1,3 +1,7 @@
+# 4.3.1
+
+Rewrite readmodels notify using buffers
+
 # 4.3.0
 
 Pass redis client for clustering socket.io
